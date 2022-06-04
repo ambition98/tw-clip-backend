@@ -1,0 +1,67 @@
+### common 설정(공통설정) ###
+server:
+  port: 8080
+  servlet:
+    context-path: /isedol-clip
+
+spring:
+  thymeleaf:
+    prefix: classpath:templates/
+    suffix: .html
+    check-template-location: true
+    mode: HTML5
+    cache: false
+
+  config:
+    activate:
+      on-profile: common
+
+---
+### dev 설정 (개발환경설정) ###
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  sql:
+    init:
+      mode: always
+#      schema-locations: classpath*:/schema.sql
+#      data-locations: classpath*:/h2/data.sql
+
+  datasource:
+    hikari:
+      driver-class-name: org.h2.Driver
+#      jdbc-url: jdbc:h2:tcp:localhost:8082/isedol_clip;MODE=mysql
+      username: sa
+      password:
+      jdbc-url: jdbc:h2:mem:testdb
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: create-drop
+
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    root: info
+
+---
+
+### deploy 설정 (배포환경설정) ###
+spring:
+  config:
+    activate:
+      on-profile: deploy
