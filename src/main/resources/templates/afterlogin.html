@@ -8,16 +8,22 @@
         console.log('test');
         window.onload = function() {
             const button = document.getElementById('check');
+            httpRequest = new XMLHttpRequest();
+            httpRequest.onreadystatechange = success;
+            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/api/oauth?code=' + [[${code}]]);
 
-            button.addEventListener('click', function() {
-                console.log('event');
+            httpRequest.send(null);
 
-                httpRequest = new XMLHttpRequest();
-                httpRequest.onreadystatechange = success;
-                httpRequest.open('GET', 'http://localhost:8080/isedol-clip/api/oauth?code=' + [[${code}]]);
 
-                httpRequest.send(null);
-            });
+            // button.addEvListener('click', function() {
+            //     console.log('event');
+            //
+            //     httpRequest = new XMLHttpRequest();
+            //     httpRequest.onreadystatechange = success;
+            //     httpRequest.open('GET', 'http://localhost:8080/isedol-clip/api/oauth?code=' + [[${code}]]);
+            //
+            //     httpRequest.send(null);
+            // });
         }
 
         function success() {
@@ -27,6 +33,12 @@
                 if (httpRequest.status === 200) {
                     console.log('200');
                     console.log(httpRequest.responseText);
+                    const token = httpRequest.getResponseHeader('Authorization').substring(7);
+
+                    document.cookie = 'tk=' + token + '; path=/;';
+                    console.log('token: ' + token);
+                    window.location = 'http://localhost:8080/isedol-clip/';
+
                 } else if(httpRequest.status === 401){
                     console.log('401');
                     console.log(httpRequest.responseText)
