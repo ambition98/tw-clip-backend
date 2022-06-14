@@ -7,7 +7,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class TwitchUserResponseDto implements ResponseData {
+public class TwitchUserResponseData implements ResponseData {
     private String id;
     private String login;
     private String displayName;

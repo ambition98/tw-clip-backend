@@ -3,12 +3,13 @@ package com.isedol_clip_backend.web.controller;
 import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.ResponseException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
+import com.isedol_clip_backend.util.MakeResp;
 import com.isedol_clip_backend.web.entity.AccountEntity;
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.request.ClipRequestDto;
 import com.isedol_clip_backend.web.model.response.CommonResponseDto;
-import com.isedol_clip_backend.web.model.response.TwitchClipsResponseDto;
-import com.isedol_clip_backend.web.model.response.TwitchUserResponseDto;
+import com.isedol_clip_backend.web.model.response.TwitchClipsResponseData;
+import com.isedol_clip_backend.web.model.response.TwitchUserResponseData;
 import com.isedol_clip_backend.web.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +35,8 @@ public class TwitchController {
     private final CallTwitchAPI callTwitchAPI;
     private final AccountService accountService;
 
-    @GetMapping("/user/{id}")
-    public TwitchUserResponseDto getTwitchUser(@PathVariable @NonNull final String id) {
+    @GetMapping("/user/id/{id}")
+    public ResponseEntity<CommonResponseDto> getTwitchUser(@PathVariable @NonNull final String id) {
         JSONObject jsonObject = null;
 
         try {
@@ -43,14 +44,14 @@ public class TwitchController {
         } catch (IOException e) {
             log.error("Fail to request twitch user");
             e.printStackTrace();
-            return null;
+            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, "Server error");
         } catch (ResponseException e) {
-            log.error(e.getMessage());
-            HttpStatus.OK
+            log.error("Http status: {}, Message: {}", e.getHttpStatus(), e.getMessage());
+            return MakeResp.make(e.getHttpStatus(), e.getMessage());
         }
 
         jsonObject = (JSONObject) ((JSONArray)jsonObject.get("data")).get(0);
-        TwitchUserResponseDto dto = new TwitchUserResponseDto();
+        TwitchUserResponseData dto = new TwitchUserResponseData();
         dto.setId((String) jsonObject.get("id"));
         dto.setLogin((String) jsonObject.get("login"));
         dto.setDisplayName((String) jsonObject.get("display_name"));
@@ -58,7 +59,16 @@ public class TwitchController {
 
         log.info(dto.toString());
 
-        return dto;
+        return MakeResp.make(HttpStatus.OK, "Success", dto);
+    }
+
+    @GetMapping("/user/names")
+    public ResponseEntity<CommonResponseDto> getTwitchUsersIdByNames(@NonNull final String[] names) {
+
+        for(String s : names)
+            System.out.println(s);
+
+        return null;
     }
 
     @GetMapping("/clips")
@@ -71,7 +81,10 @@ public class TwitchController {
         } catch (IOException e) {
             log.error("Fail to request twitch clips");
             e.printStackTrace();
-            return null;
+            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, "Server error");
+        } catch (ResponseException e) {
+            log.error("Http status: {}, Message: {}", e.getHttpStatus().value(), e.getMessage());
+            return MakeResp.make(e.getHttpStatus(), e.getMessage());
         }
 
         JSONArray clipArray = (JSONArray) jsonObject.get("data");
@@ -94,13 +107,11 @@ public class TwitchController {
             clips[i] = clip;
         }
 
-        TwitchClipsResponseDto responseDto = new TwitchClipsResponseDto();
-        responseDto.setClips(clips);
-        responseDto.setCursor(cursor);
+        TwitchClipsResponseData responseData = new TwitchClipsResponseData();
+        responseData.setClips(clips);
+        responseData.setCursor(cursor);
 
-        CommonResponseDto responseDto1 = new CommonResponseDto(HttpStatus.OK, "Success response clips", responseDto);
-//        return new ResponseEntity<>(new CommonResponseDto());
-        return new ResponseEntity<>(responseDto1, HttpStatus.OK);
+        return MakeResp.make(HttpStatus.OK, "Success", responseData);
     }
 
     @GetMapping("/oauth")
@@ -137,10 +148,11 @@ public class TwitchController {
             response.setHeader("Authorization", "Bearer " + token);
 
         } catch (IOException e) {
-            log.error("Fail to request oauth token");
+            log.error("Fail to request twitch clips");
             e.printStackTrace();
+            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, "Server error");
         }
 
-        return new ResponseEntity<>(new CommonResponseDto(HttpStatus.OK, "Success Generate Token"), HttpStatus.OK);
+        return MakeResp.make(HttpStatus.OK, "Success");
     }
 }
