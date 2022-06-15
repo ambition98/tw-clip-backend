@@ -1,6 +1,6 @@
 package com.isedol_clip_backend.util;
 
-import com.isedol_clip_backend.exception.ResponseException;
+import com.isedol_clip_backend.exception.RequestException;
 import com.isedol_clip_backend.web.model.request.ClipRequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -18,72 +18,43 @@ import java.nio.charset.StandardCharsets;
 public class CallTwitchAPI {
 
     // https://dev.twitch.tv/docs/api/reference#get-users
-    public JSONObject requestUserById(String id) throws IOException, ResponseException {
-        URL url = new URL("https://api.twitch.tv/helix/users?id=" + id);
+    public JSONObject requestUser(String[] id, String[] name) throws IOException, RequestException {
+        log.info("requestUser()");
+        URL url = makeRequestUsersUrl(id, name);
 
-//        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchSecret);
-//        conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
-//
-//        JSONObject jsonObject = getResponse(conn);
-//        log.info("Response twitch user: " + jsonObject);
-//        checkResponseStatus(jsonObject);
-//
-//        return jsonObject;
-        return requestUser(url);
-    }
+        log.info("URL: {}", url.toString());
 
-    public JSONObject requestUserByName(String name) throws IOException, ResponseException {
-        URL url = new URL("https://api.twitch.tv/helix/users?login=" + name);
-
-//        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchSecret);
-//        conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
-//
-//        JSONObject jsonObject = getResponse(conn);
-//        log.info("Response twitch user: " + jsonObject);
-//        checkResponseStatus(jsonObject);
-
-//        return jsonObject;
-
-        return requestUser(url);
-    }
-
-    private JSONObject requestUser(URL url) throws IOException, ResponseException {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
         conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
 
-        checkResponseStatus(conn);
         JSONObject jsonObject = getResponse(conn);
         log.info("Response twitch user: " + jsonObject);
 
         return jsonObject;
     }
 
-    public JSONObject requestUserByToken(String token) throws IOException, ResponseException {
+    public JSONObject requestUserByToken(String token) throws IOException, RequestException {
         URL url = new URL("https://api.twitch.tv/helix/users");
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Bearer " + token);
         conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
 
-        checkResponseStatus(conn);
         JSONObject jsonObject = getResponse(conn);
-        log.info("Response twitch user: " + jsonObject);
+        log.info("Response twitch token: " + jsonObject);
 
         return jsonObject;
     }
 
     //https://dev.twitch.tv/docs/api/reference#get-clips
-    public JSONObject requestClips(ClipRequestDto dto) throws IOException, ResponseException {
+    public JSONObject requestClips(ClipRequestDto dto) throws IOException, RequestException {
         URL url = makeRequestClipsUrl(dto);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
         conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
 
-        checkResponseStatus(conn);
         JSONObject jsonObject = getResponse(conn);
         log.info("Response twitch clips: " + jsonObject);
 
@@ -91,7 +62,7 @@ public class CallTwitchAPI {
     }
 
     // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#authorization-code-grant-flow
-    public JSONObject requestOauth(String code) throws IOException, ResponseException {
+    public JSONObject requestOauth(String code) throws IOException, RequestException {
         URL url = new URL("https://id.twitch.tv/oauth2/token");
 
         String parameters = "client_id="+LoadSecret.twitchClientId +
@@ -103,19 +74,19 @@ public class CallTwitchAPI {
         byte[] postData = parameters.getBytes(StandardCharsets.UTF_8);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//        requestPostMethod(conn, postData);
-        conn.setDoOutput(true);
-        conn.setInstanceFollowRedirects(false);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("charset", "utf-8");
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        conn.setRequestProperty("Content-Length", Integer.toString(postData.length));
-        conn.setUseCaches(false);
-
-        DataOutputStream output = new DataOutputStream(conn.getOutputStream());
-        output.write(postData);
-        output.flush();
-        output.close();
+        requestPostMethod(conn, postData);
+//        conn.setDoOutput(true);
+//        conn.setInstanceFollowRedirects(false);
+//        conn.setRequestMethod("POST");
+//        conn.setRequestProperty("charset", "utf-8");
+//        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+//        conn.setRequestProperty("Content-Length", Integer.toString(postData.length));
+//        conn.setUseCaches(false);
+//
+//        DataOutputStream output = new DataOutputStream(conn.getOutputStream());
+//        output.write(postData);
+//        output.flush();
+//        output.close();
 
 //        checkResponseStatus(conn);
         JSONObject jsonObject = getResponse(conn);
@@ -143,7 +114,7 @@ public class CallTwitchAPI {
     }
 
     // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#client-credentials-grant-flow
-    public boolean requestAccessToken() throws IOException {
+    public boolean requestAccessToken() throws IOException, RequestException {
         URL url = new URL("https://id.twitch.tv/oauth2/token");
 
         String parameters = "client_id=" + LoadSecret.twitchClientId +
@@ -190,7 +161,31 @@ public class CallTwitchAPI {
         output.close();
     }
 
-    private String convertResponseToString(InputStream is) throws IOException {
+    // Twitch Api가 인증 관련 오류가 아니면 무조건 200을 응답한다.
+    // 예를들어 존재하지 않는 id로 계정 정보를 요청해도 200을 응답한다.
+    // 때문에 Http status 체크와, 빈 데이터 체크 둘 다 있어야 한다.
+    private JSONObject getResponse(HttpURLConnection conn) throws IOException, RequestException {
+        int status = conn.getResponseCode();
+        System.out.println(status);
+        JSONObject jsonObject;
+
+        if(status == 200) {
+            jsonObject = convertResponseToJson(conn.getInputStream());
+
+            if(jsonObject.getJSONArray("data").length() < 1) {
+                throw new RequestException("No Content", HttpStatus.resolve(status));
+            }
+
+        } else {
+            jsonObject = convertResponseToJson(conn.getErrorStream());
+            throw new RequestException(jsonObject.getString("message"), HttpStatus.resolve(status));
+        }
+
+        return jsonObject;
+    }
+
+    // 정상 응답을 json으로 변경하여 리턴
+    private JSONObject convertResponseToJson(InputStream is) throws IOException {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
 
@@ -199,26 +194,7 @@ public class CallTwitchAPI {
             sb.append(line);
         }
 
-        return sb.toString();
-    }
-
-    private JSONObject getResponse(HttpURLConnection conn) throws IOException {
-        int responseCode = conn.getResponseCode();
-        JSONObject jsonObject;
-
-        if(responseCode < HttpURLConnection.HTTP_BAD_REQUEST) {
-            jsonObject = new JSONObject(convertResponseToString(conn.getInputStream()));
-        } else {
-            String errorData = convertResponseToString(conn.getErrorStream());
-//            log.warn(responseCode + " " + conn.getResponseMessage() + " " + errorData);
-
-            jsonObject = new JSONObject();
-            jsonObject.put("code", responseCode);
-            jsonObject.put("message", conn.getResponseMessage());
-            jsonObject.put("response", errorData);
-        }
-
-        return jsonObject;
+        return new JSONObject(sb.toString());
     }
 
     private URL makeRequestClipsUrl(ClipRequestDto dto) throws MalformedURLException {
@@ -241,23 +217,24 @@ public class CallTwitchAPI {
         return new URL(sb.toString());
     }
 
-    private void checkResponseStatus(HttpURLConnection conn) throws IOException, ResponseException {
-        int status = conn.getResponseCode();
-        if(status != 200) {
-            JSONObject jsonObject = getResponse(conn);
-            log.error("Response Data: {}", jsonObject.toString());
-            throw new ResponseException(jsonObject.getString("message"), HttpStatus.resolve(status));
+    private URL makeRequestUsersUrl(String[] id, String[] name) throws MalformedURLException {
+        StringBuilder sb = new StringBuilder();
+
+        if(id != null) {
+            for(String s : id) {
+                sb.append("id=").append(s).append("&");
+            }
         }
 
-//        HttpStatus httpStatus = null;
-//        try {
-//            httpStatus = HttpStatus.resolve(jsonObject.getInt("code"));
-//        } catch (JSONException e) {
-//            return;
-//        }
-//
-//        if(httpStatus.value() >= 400) {
-//            throw new ResponseException(jsonObject.getString("message"), httpStatus);
-//        }
+        if(name != null) {
+            for(String s : name) {
+                sb.append("login=").append(s).append("&");
+            }
+        }
+
+        sb.deleteCharAt(sb.length() - 1);
+
+        return new URL("https://api.twitch.tv/helix/users?" + sb);
     }
+
 }

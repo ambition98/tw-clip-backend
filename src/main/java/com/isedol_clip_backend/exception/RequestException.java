@@ -2,16 +2,16 @@ package com.isedol_clip_backend.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class ResponseException extends RuntimeException {
+public class RequestException extends Exception {
     private HttpStatus httpStatus;
 
-    public ResponseException() {}
+    public RequestException() {}
 
-    public ResponseException(String message) {
+    public RequestException(String message) {
         super(message);
     }
 
-    public ResponseException(String message, HttpStatus httpStatus) {
+    public RequestException(String message, HttpStatus httpStatus) {
         super(message);
         this.httpStatus = httpStatus;
     }
