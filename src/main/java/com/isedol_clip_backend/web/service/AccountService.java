@@ -1,5 +1,6 @@
 package com.isedol_clip_backend.web.service;
 
+import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.web.entity.AccountEntity;
 import com.isedol_clip_backend.web.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +21,14 @@ public class AccountService {
         return res;
     }
 
-    public AccountEntity getById(long id) {
-        return accountRepository.findById(id);
+    public AccountEntity getById(long id) throws NoExistedDataException {
+        return accountRepository.findById(id)
+                .orElseThrow(NoExistedDataException::new);
     }
 
-    public String getAccessTokenById(long id) { return accountRepository.getAccessTokenById(id); }
+//    public String getAccessTokenById(long id) {
+//        return accountRepository.getAccessTokenById(id);
+//    }
 
     public boolean existsById(long id) {
         return accountRepository.existsById(id);

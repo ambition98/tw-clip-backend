@@ -7,7 +7,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class ClipRequestDto {
+public class ReqClipRequestDto {
     private int broadcasterId;
     private String after; // cursor
     private String first; // count

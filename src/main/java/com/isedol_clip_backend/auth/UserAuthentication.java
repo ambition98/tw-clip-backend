@@ -1,4 +1,4 @@
-package com.isedol_clip_backend.util;
+package com.isedol_clip_backend.auth;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,7 +1,7 @@
 package com.isedol_clip_backend.config;
 
 import com.isedol_clip_backend.filter.JwtAuthenticationFilter;
-import com.isedol_clip_backend.util.JwtAuthenticationEntryPoint;
+import com.isedol_clip_backend.auth.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

@@ -1,5 +1,6 @@
 package com.isedol_clip_backend.auth;
 
+import com.isedol_clip_backend.exception.InvalidTokenException;
 import com.isedol_clip_backend.util.LoadSecret;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -49,11 +50,11 @@ public class JwtTokenProvider {
                 .setIssuedAt(new Date())
                 .signWith(KEY, SignatureAlgorithm.HS256)
                 .setExpiration(new Date(currentTime.getTime() + EXPIRY_MS))
+//                .claim(AUTHORITIES_KEY, UserRole.USER)
                 .compact();
-//                .claim(AUTHORITIES_KEY, role)
     }
 
-    public static String getId(String token) {
+    public static String getId(String token) throws InvalidTokenException {
         Claims claims = getTokenClaims(token);
 
         if(claims == null)
@@ -62,32 +63,47 @@ public class JwtTokenProvider {
         return claims.getId();
     }
 
-    public static Claims getTokenClaims(String token) {
+    public static Claims getTokenClaims(String token) throws InvalidTokenException {
         try {
             return Jwts.parserBuilder()
                     .setSigningKey(KEY)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
+
         } catch (SecurityException e) {
-            log.info("Invalid JWT signature.");
+//            log.info("Invalid JWT signature.");
+            throw new InvalidTokenException("Invalid JWT signature.");
         } catch (MalformedJwtException e) {
-            log.info("Invalid JWT token.");
+//            log.info("Invalid JWT token.");
+            throw new InvalidTokenException("Invalid JWT token.");
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT token.");
+//            log.info("Expired JWT token.");
+            throw new InvalidTokenException("Expired JWT token.");
         } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT token.");
+//            log.info("Unsupported JWT token.");
+            throw new InvalidTokenException("Unsupported JWT token.");
         } catch (IllegalArgumentException e) {
-            log.info("JWT token compact of handler are invalid.");
+//            log.info("JWT token compact of handler are invalid.");
+            throw new InvalidTokenException("JWT token compact of handler are invalid.");
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            throw new InvalidTokenException(e.getMessage());
         }
-        return null;
+
+//        return null;
     }
 
     public static boolean isValidToken(String token) {
-        return getTokenClaims(token) != null;
+        try {
+            getTokenClaims(token);
+        } catch (InvalidTokenException e) {
+            return false;
+        }
+
+        return true;
     }
 
-    public static Authentication getAuthentication(String token) {
+    public static Authentication getAuthentication(String token) throws InvalidTokenException {
 
         if(isValidToken(token)) {
 

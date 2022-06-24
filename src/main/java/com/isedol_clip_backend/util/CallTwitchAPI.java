@@ -1,7 +1,7 @@
 package com.isedol_clip_backend.util;
 
 import com.isedol_clip_backend.exception.RequestException;
-import com.isedol_clip_backend.web.model.request.ClipRequestDto;
+import com.isedol_clip_backend.web.model.request.ReqClipRequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -18,9 +18,9 @@ import java.nio.charset.StandardCharsets;
 public class CallTwitchAPI {
 
     // https://dev.twitch.tv/docs/api/reference#get-users
-    public JSONObject requestUser(String[] id, String[] name) throws IOException, RequestException {
+    public JSONObject requestUser(int[] id, String[] login) throws IOException, RequestException {
         log.info("requestUser()");
-        URL url = makeRequestUsersUrl(id, name);
+        URL url = makeRequestUsersUrl(id, login);
 
         log.info("URL: {}", url.toString());
 
@@ -29,6 +29,7 @@ public class CallTwitchAPI {
         conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
 
         JSONObject jsonObject = getResponse(conn);
+        checkEmptyData(jsonObject);
         log.info("Response twitch user: " + jsonObject);
 
         return jsonObject;
@@ -42,13 +43,14 @@ public class CallTwitchAPI {
         conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
 
         JSONObject jsonObject = getResponse(conn);
+        checkEmptyData(jsonObject);
         log.info("Response twitch token: " + jsonObject);
 
         return jsonObject;
     }
 
     //https://dev.twitch.tv/docs/api/reference#get-clips
-    public JSONObject requestClips(ClipRequestDto dto) throws IOException, RequestException {
+    public JSONObject requestClips(ReqClipRequestDto dto) throws IOException, RequestException {
         URL url = makeRequestClipsUrl(dto);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -56,7 +58,8 @@ public class CallTwitchAPI {
         conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
 
         JSONObject jsonObject = getResponse(conn);
-        log.info("Response twitch clips: " + jsonObject);
+        checkEmptyData(jsonObject);
+//        log.info("Response twitch clips: " + jsonObject);
 
         return jsonObject;
     }
@@ -75,20 +78,7 @@ public class CallTwitchAPI {
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         requestPostMethod(conn, postData);
-//        conn.setDoOutput(true);
-//        conn.setInstanceFollowRedirects(false);
-//        conn.setRequestMethod("POST");
-//        conn.setRequestProperty("charset", "utf-8");
-//        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-//        conn.setRequestProperty("Content-Length", Integer.toString(postData.length));
-//        conn.setUseCaches(false);
-//
-//        DataOutputStream output = new DataOutputStream(conn.getOutputStream());
-//        output.write(postData);
-//        output.flush();
-//        output.close();
 
-//        checkResponseStatus(conn);
         JSONObject jsonObject = getResponse(conn);
         log.info("Response twitch token: " + jsonObject);
 
@@ -126,20 +116,6 @@ public class CallTwitchAPI {
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         requestPostMethod(conn, postData);
 
-
-//        conn.setDoOutput(true);
-//        conn.setInstanceFollowRedirects(false);
-//        conn.setRequestMethod("POST");
-//        conn.setRequestProperty("charset", "utf-8");
-//        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-//        conn.setRequestProperty("Content-Length", Integer.toString(postData.length));
-//        conn.setUseCaches(false);
-//
-//        DataOutputStream output = new DataOutputStream(conn.getOutputStream());
-//        output.write(postData);
-//        output.flush();
-//        output.close();
-
         JSONObject jsonObject = getResponse(conn);
         log.info("Response twitch access token: {}", jsonObject);
 
@@ -166,20 +142,17 @@ public class CallTwitchAPI {
     // 때문에 Http status 체크와, 빈 데이터 체크 둘 다 있어야 한다.
     private JSONObject getResponse(HttpURLConnection conn) throws IOException, RequestException {
         int status = conn.getResponseCode();
-        System.out.println(status);
+        log.info("Http Status: {}", status);
         JSONObject jsonObject;
 
-        if(status == 200) {
-            jsonObject = convertResponseToJson(conn.getInputStream());
-
-            if(jsonObject.getJSONArray("data").length() < 1) {
-                throw new RequestException("No Content", HttpStatus.resolve(status));
-            }
-
-        } else {
+        if(status != 200) {
             jsonObject = convertResponseToJson(conn.getErrorStream());
+            log.warn("Error reseponse: {}", jsonObject);
             throw new RequestException(jsonObject.getString("message"), HttpStatus.resolve(status));
         }
+
+        jsonObject = convertResponseToJson(conn.getInputStream());
+        log.info("Ok reseponse: {}", jsonObject);
 
         return jsonObject;
     }
@@ -197,7 +170,14 @@ public class CallTwitchAPI {
         return new JSONObject(sb.toString());
     }
 
-    private URL makeRequestClipsUrl(ClipRequestDto dto) throws MalformedURLException {
+    // 해당 메서드는 일부 api요청에만 적용됨 (정상 응답시 "data" JsonArray로 응답을 하는 api)
+    private void checkEmptyData(JSONObject jsonObject) throws RequestException {
+        if(jsonObject.getJSONArray("data").length() < 1) {
+            throw new RequestException("No Content", HttpStatus.OK);
+        }
+    }
+
+    private URL makeRequestClipsUrl(ReqClipRequestDto dto) throws MalformedURLException {
         StringBuilder sb = new StringBuilder("https://api.twitch.tv/helix/clips?");
         sb.append("broadcaster_id=").append(dto.getBroadcasterId()).append("&");
 
@@ -217,17 +197,17 @@ public class CallTwitchAPI {
         return new URL(sb.toString());
     }
 
-    private URL makeRequestUsersUrl(String[] id, String[] name) throws MalformedURLException {
+    private URL makeRequestUsersUrl(int[] id, String[] login) throws MalformedURLException {
         StringBuilder sb = new StringBuilder();
 
         if(id != null) {
-            for(String s : id) {
-                sb.append("id=").append(s).append("&");
+            for(int i : id) {
+                sb.append("id=").append(i).append("&");
             }
         }
 
-        if(name != null) {
-            for(String s : name) {
+        if(login != null) {
+            for(String s : login) {
                 sb.append("login=").append(s).append("&");
             }
         }

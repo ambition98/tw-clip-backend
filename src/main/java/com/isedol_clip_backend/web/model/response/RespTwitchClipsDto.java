@@ -8,7 +8,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class TwitchClipsResponseData implements ResponseData {
+public class RespTwitchClipsDto {
     private TwitchClip[] clips;
     private String cursor;
 }

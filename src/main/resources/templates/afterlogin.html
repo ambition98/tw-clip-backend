@@ -10,7 +10,7 @@
             const button = document.getElementById('check');
             httpRequest = new XMLHttpRequest();
             httpRequest.onreadystatechange = success;
-            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/api/oauth?code=' + [[${code}]]);
+            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/twitch-api/oauth?code=' + [[${code}]]);
 
             httpRequest.send(null);
 

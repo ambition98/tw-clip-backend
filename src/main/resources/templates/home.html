@@ -4,13 +4,71 @@
     <title>Spring Security Example</title>
 </head>
 <script>
-    window.onload = function() {
+    let httpRequest;
 
+    window.onload = function() {
+        const jwt = document.cookie;
+        console.log(jwt);
+
+        const button = document.getElementById('auth');
+        button.addEventListener('click', function() {
+            httpRequest = new XMLHttpRequest();
+            httpRequest.onreadystatechange = success;
+            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/verify');
+
+            httpRequest.send(null);
+        });
+
+        document.getElementById('category').addEventListener('click', function() {
+            httpRequest = new XMLHttpRequest();
+            const name = document.getElementById('name').value;
+            console.log('name: ' + name)
+            const param = 'name=' + name;
+
+            httpRequest.onreadystatechange = success;
+            httpRequest.open('POST', 'http://localhost:8080/isedol-clip/user/category');
+            httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            httpRequest.send(param);
+        });
+
+        document.getElementById('get-categorys').addEventListener('click', function() {
+            httpRequest = new XMLHttpRequest();
+
+            httpRequest.onreadystatechange = success;
+            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/user/categorys');
+            httpRequest.send();
+        });
+    }
+
+    function success() {
+        console.log('success');
+        if (httpRequest.readyState === XMLHttpRequest.DONE) {
+            console.log('done');
+            if (httpRequest.status === 200) {
+                console.log('200');
+                console.log('responseText: ' + httpRequest.responseText);
+                // const token = httpRequest.getResponseHeader('Authorization').substring(7);
+
+            } else if(httpRequest.status === 401){
+                console.log('401');
+                console.log(httpRequest.responseText)
+            } else {
+                alert('request에 뭔가 문제가 있어요.');
+            }
+        }
     }
 </script>
 <body>
 <h1>Welcome!</h1>
 
 <p>Click <a th:href="@{/hello}">here</a> to see a greeting.</p>
+<button id="auth">auth</button>
+<a href="https://id.twitch.tv/oauth2/authorize?client_id=riz806ynb687m6a7piyz3jyl4q4p3a&redirect_uri=http://localhost:8080/isedol-clip/after-login&scope=user:read:email&response_type=code">
+    <button id="login">login</button>
+</a>
+<button id="category">make category</button>
+<input type="text" id="name" size="10"><br>
+
+<button id="get-categorys">getCategorys</button>
 </body>
 </html>

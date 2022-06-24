@@ -4,7 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Getter
 @Setter
@@ -15,9 +18,21 @@ public class AccountEntity {
     @Id
     private long id;
 
-    @Column(name = "TWITCH_ACCESS_TOKEN", length = 50)
+    @Column(name = "TWITCH_ACCESS_TOKEN", length = 100)
     private String TwitchAccessToken;
 
-    @Column(name = "TWITCH_REFRESH_TOKEN", length = 50)
+    @Column(name = "TWITCH_REFRESH_TOKEN", length = 100)
     private String TwitchRefreshToken;
+
+//    @OneToMany(mappedBy = "account")
+//    @ToString.Exclude
+//    private List<CategoryEntity> categorys;
+//
+//    public boolean addCategory(CategoryEntity entity) {
+//        int before = categorys.size();
+//        categorys.add(entity);
+//        int after = categorys.size();
+//
+//        return before != after;
+//    }
 }

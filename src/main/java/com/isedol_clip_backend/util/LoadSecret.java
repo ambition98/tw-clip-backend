@@ -39,9 +39,9 @@ public class LoadSecret {
         twitchAccessToken = jsonObject.getString("twitch_access_token");
         jwtSecret = jsonObject.getString("jwt_secret");
 
-        log.info("twitch_cliend_id: {}", twitchClientId);
-        log.info("twitch_secret: {}", twitchSecret);
-        log.info("twitch_access_token: {}", twitchAccessToken);
-        log.info("jwt_secret: {}", jwtSecret);
+//        log.info("twitch_cliend_id: {}", twitchClientId);
+//        log.info("twitch_secret: {}", twitchSecret);
+//        log.info("twitch_access_token: {}", twitchAccessToken);
+//        log.info("jwt_secret: {}", jwtSecret);
     }
 }

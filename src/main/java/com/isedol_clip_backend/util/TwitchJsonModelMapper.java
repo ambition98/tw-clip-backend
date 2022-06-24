@@ -13,12 +13,12 @@ public class TwitchJsonModelMapper {
 
         for(int i=0; i<users.length; i++) {
             TwitchUser user = new TwitchUser();
-            JSONObject data = jsonArray.getJSONObject(i);
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-            user.setId(data.getString("id"));
-            user.setLogin(data.getString("login"));
-            user.setDisplayName(data.getString("display_name"));
-            user.setProfileImageUrl(data.getString("profile_image_url"));
+            user.setId(jsonObject.getString("id"));
+            user.setLogin(jsonObject.getString("login"));
+            user.setDisplayName(jsonObject.getString("display_name"));
+            user.setProfileImageUrl(jsonObject.getString("profile_image_url"));
 
             users[i] = user;
         }
@@ -42,6 +42,8 @@ public class TwitchJsonModelMapper {
             clip.setEmbedUrl(jsonObject.getString("embed_url"));
             clip.setThumbnailUrl(jsonObject.getString("thumbnail_url"));
             clip.setViewCount(jsonObject.getInt("view_count"));
+
+            clips[i] = clip;
         }
 
         return clips;

@@ -15,10 +15,17 @@ public class CategoryEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+//    @ManyToOne
+//    @JoinColumn(name = "ACCOUNT_ID")
+//    private AccountEntity accountId;
     @ManyToOne
     @JoinColumn(name = "ACCOUNT_ID")
-    private AccountEntity accountId;
+    private AccountEntity account;
 
-    @Column(name = "CATEGORY_NAME")
+    @Column(name = "CATEGORY_NAME", length = 100)
     private String categoryName;
+
+//    @OneToMany(mappedBy = "category")
+//    @ToString.Exclude
+//    private List<CategoryClipEntity> categoryClips;
 }

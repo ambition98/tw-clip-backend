@@ -5,20 +5,19 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class CommonResponseDto {
+public class CommonResponse {
     private String httpStatus;
     private String msg;
-//    private String data;
-    private ResponseData data;
+    private Object dto;
 
-    public CommonResponseDto(String httpStatus, String msg) {
+    public CommonResponse(String httpStatus, String msg) {
         this.httpStatus = httpStatus;
         this.msg = msg;
     }
 
-    public CommonResponseDto(String httpStatus, String msg, ResponseData data) {
+    public CommonResponse(String httpStatus, String msg, Object dto) {
         this.httpStatus = httpStatus;
         this.msg = msg;
-        this.data = data;
+        this.dto = dto;
     }
 }
