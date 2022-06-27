@@ -23,8 +23,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         log.info("Exception 발생. JwtAuthenicationEntryPoint 도달");
 
-//        Enumeration e = reques
-
         response.sendRedirect("/isedol-clip/");
 //        Errorcode unAuthorizationCode = (ErrorCode) request.getAttribute("unauthorization.code");
 //

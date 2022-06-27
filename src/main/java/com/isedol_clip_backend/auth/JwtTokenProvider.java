@@ -29,19 +29,16 @@ public class JwtTokenProvider {
     static {
         KEY = Keys.hmacShaKeyFor(LoadSecret.jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
-//    public JwtTokenProvider() {
-//        byte[] keyBytes = Base64.getDecoder().decode(LoadSecret.jwtSecret);
-//        this.key = Keys.hmacShaKeyFor(keyBytes);
-//        this.key = Keys.hmacShaKeyFor(LoadSecret.jwtSecret.getBytes(StandardCharsets.UTF_8));
-//    }
-//
-//    public JwtToken generateToken(long id) {
-//        Date expiry = new Date(new Date().getTime() + jwtExpirationMs);
-//
-//        return new JwtToken(id, expiry, key);
-//    }
 
-    public static String generateToken(long id) {
+    public static String generateUserToken(long id) {
+        return generateToken(id, UserRole.USER);
+    }
+
+    public static String generateAdminToken(long id) {
+        return generateToken(id, UserRole.ADMIN);
+    }
+
+    private static String generateToken(long id, UserRole role) {
         Date currentTime = new Date();
 
         return Jwts.builder()
@@ -50,7 +47,7 @@ public class JwtTokenProvider {
                 .setIssuedAt(new Date())
                 .signWith(KEY, SignatureAlgorithm.HS256)
                 .setExpiration(new Date(currentTime.getTime() + EXPIRY_MS))
-//                .claim(AUTHORITIES_KEY, UserRole.USER)
+                .claim("role", role)
                 .compact();
     }
 
@@ -104,24 +101,15 @@ public class JwtTokenProvider {
     }
 
     public static Authentication getAuthentication(String token) throws InvalidTokenException {
+        Claims claims = getTokenClaims(token);
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(new String[]{claims.get(AUTHORITIES_KEY).toString()})
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
 
-        if(isValidToken(token)) {
+        User principal = new User(claims.getSubject(), "", authorities);
 
-            Claims claims = getTokenClaims(token);
-            Collection<? extends GrantedAuthority> authorities =
-                    Arrays.stream(new String[]{claims.get(AUTHORITIES_KEY).toString()})
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
-
-            User principal = new User(claims.getSubject(), "", authorities);
-
-            return new UsernamePasswordAuthenticationToken(principal, token, authorities);
-        } else {
-            log.error("Invalid Token Exception");
-//            throw new InvalidTokenException();
-            return null;
-        }
-
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 }
 

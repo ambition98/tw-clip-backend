@@ -3,10 +3,12 @@ package com.isedol_clip_backend.filter;
 import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.auth.UserAuthentication;
 import com.isedol_clip_backend.exception.InvalidTokenException;
+import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -15,10 +17,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-//@WebFilter(urlPatterns = "/oauth")
 @Slf4j
-@Component
+//@Component
+//@WebFilter(urlPatterns = "/isedol-clip/user/**")
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
@@ -27,14 +31,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         log.info("URI : {}", requestUri);
 
-//        if(requestUri.equals("/isedol-clip/verify")) {
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
-
 //        String jwt = getJwtFromRequest(request);
         String jwt = getJwtFromCookie(request);
         log.info("JWT: "+jwt);
+
+        String role = null;
+        if(jwt != null) {
+            try {
+                Claims claims = JwtTokenProvider.getTokenClaims(jwt);
+                role = (String) claims.get("role");
+                log.info(role);
+            } catch (InvalidTokenException e) {
+            }
+        }
+
+        if(role == null) {
+            log.info("UnAuthorized");
+        } else {
+            log.info(role);
+        }
 
         if (jwt != null && !jwt.isEmpty() && JwtTokenProvider.isValidToken(jwt)) {
             log.info("JwtauthenticationFilter 진입");
@@ -48,7 +63,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             log.info("UserId in filter: {}", userId);
-            UserAuthentication authentication = new UserAuthentication(userId, null, null);
+
+            List<GrantedAuthority> grantList = new ArrayList<>();
+            grantList.add(new SimpleGrantedAuthority(role));
+//            log.info("authroity: {}", grantList.get(0).getAuthority());
+
+            UserAuthentication authentication = new UserAuthentication(userId, null, grantList);
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); //기본적으로 제공한 details 세팅
 
             SecurityContextHolder.getContext().setAuthentication(authentication); //세션에서 계속 사용하기 위해 securityContext에 Authentication 등록
@@ -56,10 +76,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else {
             // 추후 수정해야댐. 인증가능한 링크안내
             response.setHeader("WWW-Authenticate", "Basic realm=\"/isedol-clip/\"");
-//            UserAuthentication authentication = new UserAuthentication(null, null);
-//            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); //기본적으로 제공한 details 세팅
-//
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
 
             //토큰이 비어있지 않으나 잘못된 토큰
 //                if (jwt != null && !jwt.isEmpty()) {

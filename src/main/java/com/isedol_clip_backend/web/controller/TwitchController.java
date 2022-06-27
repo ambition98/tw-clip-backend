@@ -145,7 +145,7 @@ public class TwitchController {
         entity.setTwitchRefreshToken(refreshToken);
         accountService.save(entity);
 
-        String token = JwtTokenProvider.generateToken(entity.getId());
+        String token = JwtTokenProvider.generateUserToken(entity.getId());
         log.info("token: {}", token);
         try {
             log.info("id: {}", JwtTokenProvider.getId(token));

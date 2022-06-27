@@ -10,23 +10,20 @@
         const jwt = document.cookie;
         console.log(jwt);
 
-        const button = document.getElementById('auth');
-        button.addEventListener('click', function() {
-            httpRequest = new XMLHttpRequest();
-            httpRequest.onreadystatechange = success;
-            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/verify');
+        httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = verify;
+        httpRequest.open('GET', 'http://localhost:8080/isedol-clip/verify');
 
-            httpRequest.send(null);
-        });
+        httpRequest.send(null);
 
         document.getElementById('category').addEventListener('click', function() {
             httpRequest = new XMLHttpRequest();
-            const name = document.getElementById('name').value;
-            console.log('name: ' + name)
-            const param = 'name=' + name;
+            const categoryName = document.getElementById('name').value;
+            console.log('categoryName: ' + categoryName);
+            const param = 'categoryName=' + categoryName;
 
             httpRequest.onreadystatechange = success;
-            httpRequest.open('POST', 'http://localhost:8080/isedol-clip/user/category');
+            httpRequest.open('POST', 'http://localhost:8080/isedol-clip/api/user/category');
             httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             httpRequest.send(param);
         });
@@ -35,7 +32,7 @@
             httpRequest = new XMLHttpRequest();
 
             httpRequest.onreadystatechange = success;
-            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/user/categorys');
+            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/api/user/categorys');
             httpRequest.send();
         });
     }
@@ -57,6 +54,27 @@
             }
         }
     }
+
+    function verify() {
+        const div = document.getElementById('login-status');
+
+        if (httpRequest.readyState === XMLHttpRequest.DONE) {
+            console.log('done');
+            if (httpRequest.status === 200) {
+                console.log('200');
+                console.log('responseText: ' + httpRequest.responseText);
+                div.innerHTML = '로그인됨';
+
+            } else if(httpRequest.status === 401) {
+                console.log('401');
+                console.log(httpRequest.responseText)
+                div.innerHTML = '로그아웃상태';
+
+            } else {
+                alert('request에 뭔가 문제가 있어요.');
+            }
+        }
+    }
 </script>
 <body>
 <h1>Welcome!</h1>
@@ -70,5 +88,7 @@
 <input type="text" id="name" size="10"><br>
 
 <button id="get-categorys">getCategorys</button>
+<hr>
+<div id="login-status"></div>
 </body>
 </html>
