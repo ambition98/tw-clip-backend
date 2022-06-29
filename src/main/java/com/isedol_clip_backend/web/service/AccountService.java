@@ -30,7 +30,7 @@ public class AccountService {
 //        return accountRepository.getAccessTokenById(id);
 //    }
 
-    public boolean existsById(long id) {
-        return accountRepository.existsById(id);
-    }
+//    public boolean existsById(long id) {
+//        return accountRepository.existsById(id);
+//    }
 }

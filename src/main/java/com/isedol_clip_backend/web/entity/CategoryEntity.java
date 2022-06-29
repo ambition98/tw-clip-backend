@@ -20,6 +20,7 @@ public class CategoryEntity {
 //    private AccountEntity accountId;
     @ManyToOne
     @JoinColumn(name = "ACCOUNT_ID")
+    @ToString.Exclude
     private AccountEntity account;
 
     @Column(name = "CATEGORY_NAME", length = 100)

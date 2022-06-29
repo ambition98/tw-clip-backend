@@ -19,11 +19,14 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
 
+        // 인가되지 않은 URI 접근 시 이 엔트리 포인트에 도달
         log.error("Responding with unauthorized error. Message - {}", authException.getMessage());
-
         log.info("Exception 발생. JwtAuthenicationEntryPoint 도달");
 
-        response.sendRedirect("/isedol-clip/");
+        String referer = request.getHeader("Referer");
+        response.sendRedirect(referer);
+        response.setStatus(401);
+
 //        Errorcode unAuthorizationCode = (ErrorCode) request.getAttribute("unauthorization.code");
 //
 //        request.setAttribute("response.failure.code", unAuthorizationCode.name());

@@ -24,6 +24,9 @@ public class AccountEntity {
     @Column(name = "TWITCH_REFRESH_TOKEN", length = 100)
     private String TwitchRefreshToken;
 
+    @Column(name = "REFRESH_TOKEN", length = 200)
+    private String refreshToken;
+
 //    @OneToMany(mappedBy = "account")
 //    @ToString.Exclude
 //    private List<CategoryEntity> categorys;

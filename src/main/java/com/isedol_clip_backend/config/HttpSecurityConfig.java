@@ -26,7 +26,7 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .cors().and().csrf().disable()
                 .authorizeRequests()
-                    .mvcMatchers("/test/**").authenticated()
+                    .mvcMatchers("/api/user/**").authenticated()
                 .anyRequest().permitAll()
                 .and()
 

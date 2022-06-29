@@ -24,8 +24,13 @@ public class CategoryService {
                 .orElseThrow(NoExistedDataException::new);
     }
 
-    public List<CategoryEntity> getCategorysByAccount(AccountEntity entity) {
-        return categoryRepository.findByAccount(entity);
+    public List<CategoryEntity> getCategorysByAccount(AccountEntity entity) throws NoExistedDataException {
+        List<CategoryEntity> list = categoryRepository.findByAccount(entity);
+        if(list.size() < 1)
+            throw new NoExistedDataException();
+
+        return list;
+
     }
 
     public CategoryEntity save(long accountId, String categoryName) throws NoExistedDataException {

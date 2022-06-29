@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class ModelMapperConfig {
@@ -17,6 +18,7 @@ public class ModelMapperConfig {
         return modelMapper;
     }
 
+    @Primary
     @Bean
     public ModelMapper strictModelMapper() {
         modelMapper.getConfiguration()

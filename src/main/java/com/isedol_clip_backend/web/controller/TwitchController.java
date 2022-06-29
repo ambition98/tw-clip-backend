@@ -3,7 +3,6 @@ package com.isedol_clip_backend.web.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isedol_clip_backend.auth.JwtTokenProvider;
-import com.isedol_clip_backend.exception.InvalidTokenException;
 import com.isedol_clip_backend.exception.RequestException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.MakeResp;
@@ -115,17 +114,17 @@ public class TwitchController {
                                                          final HttpServletResponse response) {
         log.info("OAuth code: " + code);
         JSONObject jsonObject = null;
-        String refreshToken;
-        String accessToken;
+        String twitchRefreshToken;
+        String twitchAccessToken;
         long twitchId;
 
         try {
             jsonObject = callTwitchAPI.requestOauth(code);
 
-            accessToken = jsonObject.getString("access_token");
-            refreshToken = jsonObject.getString("refresh_token");
+            twitchAccessToken = jsonObject.getString("access_token");
+            twitchRefreshToken = jsonObject.getString("refresh_token");
 
-            jsonObject = callTwitchAPI.requestUserByToken(accessToken);
+            jsonObject = callTwitchAPI.requestUserByToken(twitchAccessToken);
             log.info("Twitch Response: {}", jsonObject);
 
             twitchId = jsonObject.getJSONArray("data").getJSONObject(0).getLong("id");
@@ -141,19 +140,18 @@ public class TwitchController {
 
         AccountEntity entity = new AccountEntity();
         entity.setId(twitchId);
-        entity.setTwitchAccessToken(accessToken);
-        entity.setTwitchRefreshToken(refreshToken);
+        entity.setTwitchAccessToken(twitchAccessToken);
+        entity.setTwitchRefreshToken(twitchRefreshToken);
+
+        String accessToken = JwtTokenProvider.generateUserToken(entity.getId());
+        String refreshToken = JwtTokenProvider.generateRefreshToken(entity.getId());
+        entity.setRefreshToken(refreshToken);
+
+        log.info("Access token: {}", accessToken);
+        log.info("Refresh token: {}", refreshToken);
+
         accountService.save(entity);
-
-        String token = JwtTokenProvider.generateUserToken(entity.getId());
-        log.info("token: {}", token);
-        try {
-            log.info("id: {}", JwtTokenProvider.getId(token));
-        } catch (InvalidTokenException e) {
-            log.error("Fail to generate Token (Known Error)");
-        }
-
-        response.setHeader("Authorization", "Bearer " + token);
+        response.setHeader("Authorization", "Bearer " + accessToken);
 
         return MakeResp.make(HttpStatus.OK, "Success");
     }

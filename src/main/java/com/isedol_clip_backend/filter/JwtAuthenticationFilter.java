@@ -2,7 +2,6 @@ package com.isedol_clip_backend.filter;
 
 import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.auth.UserAuthentication;
-import com.isedol_clip_backend.exception.InvalidTokenException;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
-//@Component
-//@WebFilter(urlPatterns = "/isedol-clip/user/**")
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
@@ -31,62 +28,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         log.info("URI : {}", requestUri);
 
-//        String jwt = getJwtFromRequest(request);
         String jwt = getJwtFromCookie(request);
-        log.info("JWT: "+jwt);
+//        log.info("JWT: "+jwt);
 
-        String role = null;
-        if(jwt != null) {
+        request.setAttribute("jwt", jwt);
+        if (jwt != null && !jwt.isEmpty()) {
+//        if (jwt != null && !jwt.isEmpty()) {
+
+            Claims claims = null;
             try {
-                Claims claims = JwtTokenProvider.getTokenClaims(jwt);
-                role = (String) claims.get("role");
-                log.info(role);
-            } catch (InvalidTokenException e) {
-            }
-        }
-
-        if(role == null) {
-            log.info("UnAuthorized");
-        } else {
-            log.info(role);
-        }
-
-        if (jwt != null && !jwt.isEmpty() && JwtTokenProvider.isValidToken(jwt)) {
-            log.info("JwtauthenticationFilter 진입");
-
-            String userId = null;
-            try {
-                userId = JwtTokenProvider.getId(jwt);
-            } catch (InvalidTokenException e) {
-                logger.warn("Invalid Token: " + e.getMessage());
+                claims = JwtTokenProvider.getTokenClaims(jwt);
+            } catch (Exception e) {
                 filterChain.doFilter(request, response);
+                return;
             }
+            String userId = claims.getId();
 
-            log.info("UserId in filter: {}", userId);
+            String role = claims.get("role", String.class);
+//            log.info("UserId in filter: {}", userId);
 
             List<GrantedAuthority> grantList = new ArrayList<>();
             grantList.add(new SimpleGrantedAuthority(role));
-//            log.info("authroity: {}", grantList.get(0).getAuthority());
 
             UserAuthentication authentication = new UserAuthentication(userId, null, grantList);
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); //기본적으로 제공한 details 세팅
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-            SecurityContextHolder.getContext().setAuthentication(authentication); //세션에서 계속 사용하기 위해 securityContext에 Authentication 등록
-            log.info("인증 완료 in Filter");
-        } else {
-            // 추후 수정해야댐. 인증가능한 링크안내
-            response.setHeader("WWW-Authenticate", "Basic realm=\"/isedol-clip/\"");
-
-            //토큰이 비어있지 않으나 잘못된 토큰
-//                if (jwt != null && !jwt.isEmpty()) {
-//                    log.error("401 인증키 없음.");
-//                    request.setAttribute("unauthorization", "401 인증키 없음.");
-//                }
-
-//                if (JwtTokenProvider.isValidJwtToken(jwt)) {
-//                    log.error("401-001 인증키 만료.");
-//                    request.setAttribute("unauthorization", "401-001 인증키 만료.");
-//                }
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.info("인증 완료");
         }
 
         filterChain.doFilter(request, response);
@@ -103,12 +71,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getJwtFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        if(cookies == null) {
-            log.info("Not exist cookies in request");
-
-        } else {
+        if(cookies != null) {
             for(Cookie cookie : cookies) {
-                log.info("cookie: {} = {}", cookie.getName(), cookie.getValue());
+//                log.info("cookie: {} = {}", cookie.getName(), cookie.getValue());
                 if(cookie.getName().equals("tk")) {
                     return cookie.getValue();
                 }
