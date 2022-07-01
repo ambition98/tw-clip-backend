@@ -22,7 +22,7 @@ public class CallTwitchAPI {
         log.info("requestUser()");
         URL url = makeRequestUsersUrl(id, login);
 
-        log.info("URL: {}", url.toString());
+        log.info("URL: {}", url);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
@@ -183,11 +183,17 @@ public class CallTwitchAPI {
 
         if(dto.getAfter() != null) {
             sb.append("after=").append(dto.getAfter()).append("&");
-        } else if(dto.getStartedAt() != null) {
-            sb.append("started_at=").append(dto.getStartedAt()).append("&");
-        } else if(dto.getEndedAt() != null) {
-            sb.append("ended_at=").append(dto.getEndedAt()).append("&");
-        } else if(dto.getFirst() != null) {
+        }
+
+        if(dto.getStartedAt() != null) {
+            sb.append("started_at=").append(ConvertCalender.generalFormatToRfc3339(dto.getStartedAt(), ConvertCalender.convertType.START_AT)).append("&");
+        }
+
+        if(dto.getEndedAt() != null) {
+            sb.append("ended_at=").append(ConvertCalender.generalFormatToRfc3339(dto.getEndedAt(), ConvertCalender.convertType.ENDED_AT)).append("&");
+        }
+
+        if(dto.getFirst() != 0) {
             sb.append("first=").append(dto.getFirst()).append("&");
         }
 

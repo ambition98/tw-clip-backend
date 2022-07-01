@@ -51,14 +51,14 @@ public class AuthController {
         try {
             JwtTokenProvider.getTokenClaims(jwt);
         } catch(ExpiredJwtException e) {
-            sid = JwtTokenProvider.getId(jwt);
+            sid = JwtTokenProvider.getIdWithoutValidate(jwt);
         } catch (Exception e) {
             return MakeResp.make(HttpStatus.UNAUTHORIZED, "Need Login");
         }
 
         long id = Long.parseLong(sid);
 
-        AccountEntity entity = null;
+        AccountEntity entity;
         try {
             entity = accountService.getById(id);
         } catch (NoExistedDataException e) {
@@ -70,7 +70,7 @@ public class AuthController {
         try {
             JwtTokenProvider.getTokenClaims(refreshToken);
         } catch (ExpiredJwtException e) {
-            return MakeResp.make(HttpStatus.BAD_REQUEST, "Need refresh access token");
+            return MakeResp.make(HttpStatus.BAD_REQUEST, "Expired refresh token. Need Login");
         } catch (Exception e) {
             return MakeResp.make(HttpStatus.UNAUTHORIZED, "Need Login");
         }
@@ -90,7 +90,7 @@ public class AuthController {
             return MakeResp.make(HttpStatus.OK, "Success");
         }
 
-        long id = Long.parseLong(JwtTokenProvider.getId(jwt));
+        long id = Long.parseLong(JwtTokenProvider.getIdWithoutValidate(jwt));
 
         try {
             AccountEntity entity = accountService.getById(id);

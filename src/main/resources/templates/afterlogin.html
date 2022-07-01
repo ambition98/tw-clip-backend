@@ -7,23 +7,11 @@
         let httpRequest;
         console.log('test');
         window.onload = function() {
-            const button = document.getElementById('check');
             httpRequest = new XMLHttpRequest();
             httpRequest.onreadystatechange = success;
-            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/twitch-api/oauth?code=' + [[${code}]]);
+            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/api/twitch/oauth?code=' + [[${code}]]);
 
             httpRequest.send(null);
-
-
-            // button.addEvListener('click', function() {
-            //     console.log('event');
-            //
-            //     httpRequest = new XMLHttpRequest();
-            //     httpRequest.onreadystatechange = success;
-            //     httpRequest.open('GET', 'http://localhost:8080/isedol-clip/api/oauth?code=' + [[${code}]]);
-            //
-            //     httpRequest.send(null);
-            // });
         }
 
         function success() {

@@ -67,10 +67,6 @@ public class AccountController {
             return MakeResp.make(HttpStatus.BAD_REQUEST, "No Content");
         }
 
-//        if(categoryEntitys.size() < 1) {
-//            return MakeResp.make(HttpStatus.OK, "No Content");
-//        }
-
         List<RespCategoryDto> dtoList = new ArrayList<>(categoryEntitys.size());
         for(CategoryEntity entity : categoryEntitys) {
             RespCategoryDto dto = modelMapper.map(entity, RespCategoryDto.class);
@@ -91,10 +87,6 @@ public class AccountController {
             log.warn("No Content");
             return MakeResp.make(HttpStatus.BAD_REQUEST, "No Content");
         }
-
-//        if(clipEntitys.size() < 1) {
-//            return MakeResp.make(HttpStatus.OK, "No Content");
-//        }
 
         log.info("size: {}", clipEntitys.size());
         List<RespCategoryClipDto> dtoList = new ArrayList<>(clipEntitys.size());

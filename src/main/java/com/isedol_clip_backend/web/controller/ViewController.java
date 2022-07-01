@@ -14,4 +14,10 @@ public class ViewController {
 
         return "test";
     }
+
+    @GetMapping("/search")
+    public String search(Model model) {
+
+        return "search";
+    }
 }

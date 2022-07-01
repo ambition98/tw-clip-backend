@@ -29,24 +29,17 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.util.Arrays;
 
 @Slf4j
 @RestController
-@RequestMapping("/twitch-api")
+@RequestMapping("/api/twitch/")
 @RequiredArgsConstructor
 public class TwitchController {
 
     private final CallTwitchAPI callTwitchAPI;
     private final AccountService accountService;
 
-    @GetMapping("/test")
-    public void test(String[] id) {
-        System.out.println(Arrays.toString(id));
-
-    }
     @GetMapping("/users")
-//    public ResponseEntity<CommonResponse> getTwitchUsers(final String[] id, final String[] login) {
     public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) {
 
         if(!requestDto.isValid()) {
@@ -54,7 +47,7 @@ public class TwitchController {
         }
 
 
-        JSONObject jsonObject = null;
+        JSONObject jsonObject;
 
         try {
             jsonObject = callTwitchAPI.requestUser(requestDto.getId(), requestDto.getLogin());
@@ -85,8 +78,8 @@ public class TwitchController {
 
     @GetMapping("/clips")
     public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipRequestDto requestDto) {
-        log.info("RequestDto: " + requestDto.toString());
-        JSONObject jsonObject = null;
+        log.info("RequestDto: " + requestDto);
+        JSONObject jsonObject;
 
         try {
             jsonObject = callTwitchAPI.requestClips(requestDto);
@@ -113,7 +106,7 @@ public class TwitchController {
     public ResponseEntity<CommonResponse> getTwitchToken(@NonNull final String code,
                                                          final HttpServletResponse response) {
         log.info("OAuth code: " + code);
-        JSONObject jsonObject = null;
+        JSONObject jsonObject;
         String twitchRefreshToken;
         String twitchAccessToken;
         long twitchId;
@@ -154,5 +147,11 @@ public class TwitchController {
         response.setHeader("Authorization", "Bearer " + accessToken);
 
         return MakeResp.make(HttpStatus.OK, "Success");
+    }
+
+    @GetMapping
+    public ResponseEntity<CommonResponse> getHotClips() {
+
+        return null;
     }
 }

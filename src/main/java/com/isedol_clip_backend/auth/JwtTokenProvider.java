@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
     private static final Key KEY;
-    private static final long ACCESS_TOKEN_EXPIRY_MS = 1800000;
-    private static final long REFRESH_TOKEN_EXPIRY_MS = 259200000;
+    private static final long ACCESS_TOKEN_EXPIRY_MS = 1800000; //30분
+    private static final long REFRESH_TOKEN_EXPIRY_MS = 259200000; //3일
     private static final String AUTHORITIES_KEY = "role";
 
     static {
@@ -56,7 +56,7 @@ public class JwtTokenProvider {
     }
 
     //!!주의: 해당 메서드는 토큰 유효성 검사를 하지 않음
-    public static String getId(String token) {
+    public static String getIdWithoutValidate(String token) {
         StringTokenizer st = new StringTokenizer(token, ".");
         st.nextToken();
         Base64.Decoder decoder = Base64.getDecoder();

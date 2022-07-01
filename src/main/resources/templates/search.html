@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>검증 페이지</title>
+    <script th:inline="javascript">
+        let httpRequest;
+        const date = new Date();
+        const nowYear = date.getFullYear();
+        let nowMonth = date.getMonth() + 1;
+        let nowDate = date.getDate();
+        if(nowMonth < 10)
+            nowMonth = '0' + nowMonth;
+
+        if(nowDate < 10)
+            nowDate = '0' + nowDate;
+
+        window.onload = function() {
+            const now = nowYear + '-' + nowMonth + '-' + nowDate;
+            document.getElementById('startedAt').value = now;
+            document.getElementById('endedAt').value = now;
+
+            document.getElementById('login').addEventListener('blur', function() {
+                const login = document.getElementById('login').value;
+                httpRequest = new XMLHttpRequest();
+                httpRequest.onreadystatechange = getId;
+                httpRequest.open('GET', 'http://localhost:8080/isedol-clip/api/twitch/users?login=' + login);
+                httpRequest.send(null);
+            });
+        }
+
+        function getId() {
+            let div = document.getElementById('login-info')
+            div.innerHTML = '';
+
+            if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                if (httpRequest.status === 200) {
+                    const json = JSON.parse(httpRequest.responseText);
+                    console.log('json: ' + json);
+
+                    const user = json.dto.users[0];
+                    const twitchId = user.id;
+                    const idDiv = document.createElement('div');
+                    const nameDiv = document.createElement('div');
+                    const imgDiv = document.createElement('img');
+                    idDiv.innerHTML = twitchId;
+                    nameDiv.innerHTML = user.displayName;
+                    imgDiv.src = user.profileImageUrl;
+
+                    div.appendChild(idDiv);
+                    div.appendChild(nameDiv);
+                    div.appendChild(imgDiv);
+
+                    getClips(twitchId);
+
+                } else if(httpRequest.status === 401){
+                    console.log(httpRequest.responseText)
+                } else {
+                    console.log(httpRequest.responseText)
+                }
+            }
+        }
+
+        function getClips(id) {
+            const startedAt = document.getElementById('startedAt').value;
+            const endedAt = document.getElementById('endedAt').value;
+            const queryString = 'broadcasterId=' + id + '&startedAt=' + startedAt + '&endedAt=' + endedAt;
+            httpRequest = new XMLHttpRequest();
+            httpRequest.onreadystatechange = function() {
+                if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                    if (httpRequest.status === 200) {
+                        console.log(httpRequest.responseText);
+                        const json = JSON.parse(httpRequest.responseText);
+                        const wrapper = document.getElementById('clips-wrapper');
+                        wrapper.innerHTML = '';
+
+                        json.dto.clips.forEach(function(e) {
+                            const clipDiv = document.createElement('div');
+                            const img = document.createElement('img');
+                            const embedFrame = document.createElement('iframe');
+                            img.src = e.thumbnailUrl;
+                            // clipFrame.src = 'https://player.twitch.tv/?' +  + '&parent=localhost:8080/isedol-clip&autoplay=false'
+                            embedFrame.src = e.embedUrl + '&parent=localhost';
+                            embedFrame.width = '800';
+                            embedFrame.height = '500';
+                            clipDiv.appendChild(img);
+                            clipDiv.appendChild(embedFrame);
+
+                            wrapper.appendChild(clipDiv);
+                        });
+
+                    } else {
+                        console.log(httpRequest.responseText);
+                    }
+                }
+            };
+            httpRequest.open('GET', 'http://localhost:8080/isedol-clip/api/twitch/clips?' + queryString);
+            httpRequest.send(null);
+        }
+    </script>
+</head>
+<body>
+<div id="search-wrapper">
+    <input type="date" id="startedAt" value="2022-06-30" min="1900-01-01" max="2022-06-30"> ~
+    <input type="date" id="endedAt" value="2022-06-30" min="1900-01-01" max="2022-06-30"><br>
+    아이디 <input type="text" id="login">
+    <button id="submit">검색</button>
+</div>
+<!--<iframe src="https://clips.twitch.tv/embed?clip=PlainBoxyHawkBrainSlug-GIENd6Uc7fZoIDWy&parent=localhost" width="800" height="500">-->
+<div id="testclip"></div>
+<hr>
+<div id="login-info"></div>
+<hr>
+<div id="clips-wrapper"></div>
+</body>
+</html>
