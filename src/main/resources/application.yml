@@ -1,6 +1,6 @@
 ### common 설정(공통설정) ###
 server:
-  port: 8080
+  port: 80
   servlet:
     context-path: /isedol-clip
 
@@ -65,3 +65,14 @@ spring:
   config:
     activate:
       on-profile: deploy
+
+  sql:
+    init:
+      mode: always
+
+  datasource:
+    hikari:
+      driver-class-name: org.mariadb.jdbc.Driver
+      username: ${dbname}
+      password: ${dbpass}
+      jdbc-url: ${dburl}
