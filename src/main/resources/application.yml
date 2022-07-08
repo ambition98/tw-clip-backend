@@ -79,4 +79,4 @@ spring:
 
 logging:
   file:
-    path: /var/lib/jenkins/workspace/log/isedol-clip
+    path: /log
