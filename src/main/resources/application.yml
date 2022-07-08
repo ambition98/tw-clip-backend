@@ -76,7 +76,7 @@ spring:
       username: ${dbname}
       password: ${dbpass}
       jdbc-url: ${dburl}
+
 logging:
   file:
     path: /var/lib/jenkins/workspace/log/isedol-clip
-    name: output.log
