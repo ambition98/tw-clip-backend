@@ -1,0 +1,4 @@
+FROM openjdk:8
+EXPOSE 80
+ADD ./target/isedol-clip-backend-*.jar isedol-clip-backend.jar
+ENTRYPOINT ["java", "-jar", "isedol-clip-backend.jar"]
