@@ -34,6 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         response.setHeader("Access-Control-Allow-origin",
                 "https://isedol-clip.xyz");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
 
         String jwt = getJwtFromCookie(request);
 //        log.info("JWT: "+jwt);
