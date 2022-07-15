@@ -152,7 +152,7 @@ public class CallTwitchAPI {
         }
 
         jsonObject = convertResponseToJson(conn.getInputStream());
-        log.info("Ok reseponse: {}", jsonObject);
+//        log.info("Ok reseponse: {}", jsonObject);
 
         return jsonObject;
     }

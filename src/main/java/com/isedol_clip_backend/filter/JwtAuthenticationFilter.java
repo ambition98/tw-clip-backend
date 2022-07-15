@@ -7,7 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.authentication.
+        WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -23,10 +24,16 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
         String requestUri = request.getRequestURI();
         log.info("URI : {}", requestUri);
+
+        response.setHeader("Access-Control-Allow-origin",
+                "https://isedol-clip.xyz");
 
         String jwt = getJwtFromCookie(request);
 //        log.info("JWT: "+jwt);
@@ -50,8 +57,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             List<GrantedAuthority> grantList = new ArrayList<>();
             grantList.add(new SimpleGrantedAuthority(role));
 
-            UserAuthentication authentication = new UserAuthentication(userId, null, grantList);
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            UserAuthentication authentication
+                    = new UserAuthentication(userId, null, grantList);
+            authentication.setDetails(new WebAuthenticationDetailsSource()
+                    .buildDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("인증 완료");
