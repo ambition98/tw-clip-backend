@@ -32,10 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         log.info("URI : {}", requestUri);
 
-        response.setHeader("Access-Control-Allow-origin",
-                "https://isedol-clip.xyz");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
-
         String jwt = getJwtFromCookie(request);
 //        log.info("JWT: "+jwt);
 
