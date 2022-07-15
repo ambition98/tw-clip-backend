@@ -15,7 +15,8 @@ public class MvcConfig implements WebMvcConfigurer {
 
     public void addCorsMappings(CorsRegistry corsRegistry) {
         corsRegistry.addMapping("/**")
-                .allowedOrigins("http://localhost", "https://isedol-clip.xyz");
+                .allowedOrigins("http://localhost:8080", "https://isedol-clip" +
+                        ".xyz");
 
     }
 }
