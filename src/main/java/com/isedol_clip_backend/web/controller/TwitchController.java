@@ -82,6 +82,22 @@ public class TwitchController {
         JSONObject jsonObject;
 
         try {
+            jsonObject = callTwitchAPI.requestUser(null,
+                    new String[]{requestDto.getLogin()});
+        } catch (IOException e) {
+            log.error("Http status: {}, Message: {}", HttpStatus.INTERNAL_SERVER_ERROR,
+                    e.getMessage());
+            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+
+        } catch (RequestException e) {
+            log.warn("Http status: {}, Message: {}", e.getHttpStatus().value(), e.getMessage());
+            return MakeResp.make(e.getHttpStatus(), e.getMessage());
+        }
+
+        requestDto.setBroadcasterId(jsonObject.getJSONArray("data")
+                .getJSONObject(0).getString("id"));
+
+        try {
             jsonObject = callTwitchAPI.requestClips(requestDto);
         } catch (IOException e) {
 //            log.error("Fail to request twitch user");
