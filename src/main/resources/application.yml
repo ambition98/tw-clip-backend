@@ -1,9 +1,4 @@
 ### common 설정(공통설정) ###
-server:
-  port: 80
-#  servlet:
-#    context-path: /isedol-clip
-
 spring:
   thymeleaf:
     prefix: classpath:templates/
@@ -16,8 +11,12 @@ spring:
     activate:
       on-profile: common
 
+
 ---
 ### dev 설정 (개발환경설정) ###
+server:
+  port: 80
+
 spring:
   h2:
     console:
@@ -61,6 +60,9 @@ logging:
 ---
 
 ### deploy 설정 (배포환경설정) ###
+server:
+  port: 443
+
 spring:
   config:
     activate:
