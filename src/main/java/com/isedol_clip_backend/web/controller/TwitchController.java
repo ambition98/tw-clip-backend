@@ -1,7 +1,5 @@
 package com.isedol_clip_backend.web.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.RequestException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
@@ -19,6 +17,7 @@ import com.isedol_clip_backend.web.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -38,6 +37,7 @@ public class TwitchController {
 
     private final CallTwitchAPI callTwitchAPI;
     private final AccountService accountService;
+    private ModelMapper modelMapper;
 
     @GetMapping("/users")
     public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) {
@@ -65,11 +65,11 @@ public class TwitchController {
         RespTwitchUsersDto twitchUsersDto = new RespTwitchUsersDto();
         twitchUsersDto.setUsers(twitchUsers);
 
-        try {
-            String json = new ObjectMapper().writeValueAsString(twitchUsersDto);
-        } catch (JsonProcessingException e) {
-            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, "JSON Parsing error");
-        }
+//        try {
+//            String json = new ObjectMapper().writeValueAsString(twitchUsersDto);
+//        } catch (JsonProcessingException e) {
+//            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, "JSON Parsing error");
+//        }
 
         log.info(twitchUsersDto.toString());
 
@@ -94,8 +94,10 @@ public class TwitchController {
             return MakeResp.make(e.getHttpStatus(), e.getMessage());
         }
 
-        requestDto.setBroadcasterId(jsonObject.getJSONArray("data")
-                .getJSONObject(0).getString("id"));
+        String broadcasterId = jsonObject.getJSONArray("data")
+                .getJSONObject(0).getString("id");
+        log.info("broadcasterId: {}", broadcasterId);
+        requestDto.setBroadcasterId(broadcasterId);
 
         try {
             jsonObject = callTwitchAPI.requestClips(requestDto);
@@ -109,11 +111,13 @@ public class TwitchController {
         }
 
         String cursor = jsonObject.getJSONObject("pagination").getString("cursor");
-        TwitchClip[] clips = TwitchJsonModelMapper.clipMapping(jsonObject);
-
+        TwitchClip[] clips = TwitchJsonModelMapper.clipMapping(jsonObject,
+                requestDto.getLogin(), broadcasterId);
         RespTwitchClipsDto clipsDto = new RespTwitchClipsDto();
         clipsDto.setClips(clips);
         clipsDto.setCursor(cursor);
+
+        log.info("clipsDto: {}", clipsDto);
 
         return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
     }
@@ -164,10 +168,9 @@ public class TwitchController {
 
         return MakeResp.make(HttpStatus.OK, "Success");
     }
-
-    @GetMapping
-    public ResponseEntity<CommonResponse> getHotClips() {
-
-        return null;
-    }
+//    @GetMapping
+//    public ResponseEntity<CommonResponse> getHotClips() {
+//
+//        return null;
+//    }
 }

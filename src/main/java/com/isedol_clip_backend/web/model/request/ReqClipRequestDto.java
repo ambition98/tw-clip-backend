@@ -15,6 +15,6 @@ public class ReqClipRequestDto {
     private String broadcasterId;
     private String after; // cursor
     private int first; // count
-    private String endedAt;
     private String startedAt;
+    private String endedAt;
 }

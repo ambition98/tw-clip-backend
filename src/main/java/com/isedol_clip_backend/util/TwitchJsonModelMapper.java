@@ -26,22 +26,27 @@ public class TwitchJsonModelMapper {
         return users;
     }
 
-    public static TwitchClip[] clipMapping(JSONObject twitcjJson) {
+    public static TwitchClip[] clipMapping(JSONObject twitcjJson,
+                                           String login, String boradCasterId) {
         JSONArray jsonArray = twitcjJson.getJSONArray("data");
         TwitchClip[] clips = new TwitchClip[jsonArray.length()];
 
         for(int i=0; i<clips.length; i++) {
             TwitchClip clip = new TwitchClip();
             JSONObject jsonObject = jsonArray.getJSONObject(i);
+            String createdAt = ConvertCalender
+                    .rfc3339ToGeneralFormat(jsonObject.getString("created_at"));
 
             clip.setId(jsonObject.getString("id"));
             clip.setTitle(jsonObject.getString("title"));
-            clip.setCreatedAt(jsonObject.getString("created_at"));
+            clip.setCreatedAt(createdAt);
             clip.setDuration(jsonObject.getDouble("duration"));
             clip.setCreatorName(jsonObject.getString("creator_name"));
             clip.setEmbedUrl(jsonObject.getString("embed_url"));
             clip.setThumbnailUrl(jsonObject.getString("thumbnail_url"));
             clip.setViewCount(jsonObject.getInt("view_count"));
+            clip.setBroadcasterId(boradCasterId);
+            clip.setLogin(login);
 
             clips[i] = clip;
         }

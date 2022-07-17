@@ -37,6 +37,7 @@ public class CallTwitchAPI {
 
     public JSONObject requestUserByToken(String token) throws IOException, RequestException {
         URL url = new URL("https://api.twitch.tv/helix/users");
+        log.info("URL: {}", url);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Bearer " + token);
