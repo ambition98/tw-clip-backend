@@ -52,6 +52,7 @@ public class CallTwitchAPI {
 
     //https://dev.twitch.tv/docs/api/reference#get-clips
     public JSONObject requestClips(ReqClipRequestDto dto) throws IOException, RequestException {
+        log.info("request dto: {}", dto);
         URL url = makeRequestClipsUrl(dto);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -187,11 +188,18 @@ public class CallTwitchAPI {
         }
 
         if(dto.getStartedAt() != null) {
-            sb.append("started_at=").append(ConvertCalender.generalFormatToRfc3339(dto.getStartedAt(), ConvertCalender.convertType.START_AT)).append("&");
+            String startedAt =
+                    ConvertCalender.generalFormatToRfc3339(dto.getStartedAt(),
+                            ConvertCalender.convertType.START_AT);
+            log.info("startedAt {}", startedAt);
+            sb.append("started_at=").append(startedAt).append("&");
         }
 
         if(dto.getEndedAt() != null) {
-            sb.append("ended_at=").append(ConvertCalender.generalFormatToRfc3339(dto.getEndedAt(), ConvertCalender.convertType.ENDED_AT)).append("&");
+            String endedAt = ConvertCalender.generalFormatToRfc3339(dto.getEndedAt(),
+                    ConvertCalender.convertType.ENDED_AT);
+            log.info("endedAt {}", endedAt);
+            sb.append("ended_at=").append(endedAt).append("&");
         }
 
         if(dto.getFirst() != 0) {

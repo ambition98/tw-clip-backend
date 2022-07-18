@@ -9,8 +9,8 @@ import lombok.ToString;
 @ToString
 public class TwitchClip {
     private String id;
-    private String broadcasterId;
-    private String login;
+//    private String broadcasterId;
+//    private String login;
     private String embedUrl;
     private String creatorName;
     private String title;
@@ -18,13 +18,13 @@ public class TwitchClip {
     private String createdAt;
     private String thumbnailUrl;
     private double duration;
+    private String broadcasterId;
+    private String broadcasterName;
 
     /* Twitch Api로부터 오는 전체 필드 (당장은 필요없음) */
 //    private String url;
 //    private String videoId;
 //    private String gameId;
 //    private String language;
-//    private String broadcasterId;
-//    private String broadcasterName;
 //    private String creatorId;
 }

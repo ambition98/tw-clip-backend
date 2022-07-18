@@ -26,8 +26,7 @@ public class TwitchJsonModelMapper {
         return users;
     }
 
-    public static TwitchClip[] clipMapping(JSONObject twitcjJson,
-                                           String login, String boradCasterId) {
+    public static TwitchClip[] clipMapping(JSONObject twitcjJson) {
         JSONArray jsonArray = twitcjJson.getJSONArray("data");
         TwitchClip[] clips = new TwitchClip[jsonArray.length()];
 
@@ -45,8 +44,8 @@ public class TwitchJsonModelMapper {
             clip.setEmbedUrl(jsonObject.getString("embed_url"));
             clip.setThumbnailUrl(jsonObject.getString("thumbnail_url"));
             clip.setViewCount(jsonObject.getInt("view_count"));
-            clip.setBroadcasterId(boradCasterId);
-            clip.setLogin(login);
+            clip.setBroadcasterId(jsonObject.getString("broadcaster_id"));
+            clip.setBroadcasterName(jsonObject.getString("broadcaster_name"));
 
             clips[i] = clip;
         }

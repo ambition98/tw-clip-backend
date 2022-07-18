@@ -15,6 +15,7 @@ public class ConvertCalender {
     private static final long TIME_DIFFERENCE = 32_400_000; //9시간
 
     // For request TwitchAPI
+    // KST -> UTC
     public static String generalFormatToRfc3339(String time, convertType type) {
         int[] ymd = getYMD(time);
         int year = ymd[0];
@@ -30,6 +31,7 @@ public class ConvertCalender {
     }
 
     // For response Client
+    // UTC -> KST
     public static String rfc3339ToGeneralFormat(String time) {
         StringTokenizer st = new StringTokenizer(time, "T");
         String stringYmd = st.nextToken();
@@ -44,8 +46,15 @@ public class ConvertCalender {
         int hour = deleteZero(st.nextToken());
         int minute = deleteZero(st.nextToken());
         int second = deleteZero(st.nextToken().substring(0, 2));
+//        int hour = Integer.parseInt(st.nextToken());
+//        int minute = Integer.parseInt(st.nextToken());
+//        int second = Integer.parseInt(st.nextToken().substring(0, 2));
 
-        return year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second;
+        Date d = new Date(new GregorianCalendar(year, month, date, hour,
+                        minute, second).getTimeInMillis() + TIME_DIFFERENCE);
+
+
+        return SDF_1.format(d) + " " + SDF_2.format(d);
     }
 
     private static int[] getYMD(String time) {

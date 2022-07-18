@@ -14,7 +14,8 @@ public class ReqTwitchUsersDto {
     public boolean isValid() {
         int idLen = id == null ? 0 : id.length;
         int nameLen = login == null ? 0 : login.length;
+        int reqCnt = idLen + nameLen;
 
-        return idLen + nameLen <= 100;
+        return reqCnt > 0 && reqCnt <= 100;
     }
 }

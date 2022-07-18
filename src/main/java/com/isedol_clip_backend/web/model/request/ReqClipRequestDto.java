@@ -11,7 +11,6 @@ import javax.validation.constraints.NotBlank;
 @ToString
 public class ReqClipRequestDto {
     @NotBlank(message = "Required Parameter. String login")
-    private String login; // 트위치 닉네임
     private String broadcasterId;
     private String after; // cursor
     private int first; // count

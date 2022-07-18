@@ -43,9 +43,9 @@ public class TwitchController {
     public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) {
 
         if(!requestDto.isValid()) {
-            return MakeResp.make(HttpStatus.BAD_REQUEST, "parameter \"id\" and \"login\" is limit 100");
+            return MakeResp.make(HttpStatus.BAD_REQUEST
+                    , "Parameter \"id\" and \"login\" is limit 100 or greater then 1");
         }
-
 
         JSONObject jsonObject;
 
@@ -81,28 +81,27 @@ public class TwitchController {
         log.info("RequestDto: " + requestDto);
         JSONObject jsonObject;
 
-        try {
-            jsonObject = callTwitchAPI.requestUser(null,
-                    new String[]{requestDto.getLogin()});
-        } catch (IOException e) {
-            log.error("Http status: {}, Message: {}", HttpStatus.INTERNAL_SERVER_ERROR,
-                    e.getMessage());
-            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-
-        } catch (RequestException e) {
-            log.warn("Http status: {}, Message: {}", e.getHttpStatus().value(), e.getMessage());
-            return MakeResp.make(e.getHttpStatus(), e.getMessage());
-        }
-
-        String broadcasterId = jsonObject.getJSONArray("data")
-                .getJSONObject(0).getString("id");
-        log.info("broadcasterId: {}", broadcasterId);
-        requestDto.setBroadcasterId(broadcasterId);
+//        try {
+//            jsonObject = callTwitchAPI.requestUser(null,
+//                    new String[]{requestDto.getLogin()});
+//        } catch (IOException e) {
+//            log.error("Http status: {}, Message: {}", HttpStatus.INTERNAL_SERVER_ERROR,
+//                    e.getMessage());
+//            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+//
+//        } catch (RequestException e) {
+//            log.warn("Http status: {}, Message: {}", e.getHttpStatus().value(), e.getMessage());
+//            return MakeResp.make(e.getHttpStatus(), e.getMessage());
+//        }
+//
+//        String broadcasterId = jsonObject.getJSONArray("data")
+//                .getJSONObject(0).getString("id");
+//        log.info("broadcasterId: {}", broadcasterId);
+//        requestDto.setBroadcasterId(broadcasterId);
 
         try {
             jsonObject = callTwitchAPI.requestClips(requestDto);
         } catch (IOException e) {
-//            log.error("Fail to request twitch user");
             log.error("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
             return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (RequestException e) {
@@ -111,8 +110,7 @@ public class TwitchController {
         }
 
         String cursor = jsonObject.getJSONObject("pagination").getString("cursor");
-        TwitchClip[] clips = TwitchJsonModelMapper.clipMapping(jsonObject,
-                requestDto.getLogin(), broadcasterId);
+        TwitchClip[] clips = TwitchJsonModelMapper.clipMapping(jsonObject);
         RespTwitchClipsDto clipsDto = new RespTwitchClipsDto();
         clipsDto.setClips(clips);
         clipsDto.setCursor(cursor);
@@ -168,9 +166,4 @@ public class TwitchController {
 
         return MakeResp.make(HttpStatus.OK, "Success");
     }
-//    @GetMapping
-//    public ResponseEntity<CommonResponse> getHotClips() {
-//
-//        return null;
-//    }
 }
