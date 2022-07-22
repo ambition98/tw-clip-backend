@@ -5,6 +5,8 @@ import com.isedol_clip_backend.web.model.TwitchUser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+
 // 트위치 응답 Json을 Response에 들어갈 dto로 매핑
 public class TwitchJsonModelMapper {
     public static TwitchUser[] userMapping(JSONObject twitchJson) {
@@ -26,7 +28,7 @@ public class TwitchJsonModelMapper {
         return users;
     }
 
-    public static TwitchClip[] clipMapping(JSONObject twitcjJson) {
+    public static TwitchClip[] clipMapping(JSONObject twitcjJson) throws ParseException {
         JSONArray jsonArray = twitcjJson.getJSONArray("data");
         TwitchClip[] clips = new TwitchClip[jsonArray.length()];
 
@@ -34,7 +36,7 @@ public class TwitchJsonModelMapper {
             TwitchClip clip = new TwitchClip();
             JSONObject jsonObject = jsonArray.getJSONObject(i);
             String createdAt = ConvertCalender
-                    .rfc3339ToGeneralFormat(jsonObject.getString("created_at"));
+                    .rfcToGeneral(jsonObject.getString("created_at"));
 
             clip.setId(jsonObject.getString("id"));
             clip.setTitle(jsonObject.getString("title"));

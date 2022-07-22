@@ -1,77 +1,69 @@
 package com.isedol_clip_backend.util;
 
+import lombok.extern.slf4j.Slf4j;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.StringTokenizer;
 
 /**
  * Convert yyyy-MM-dd to RFC3339 format or RFC3339 to yyyy-MM-dd hh:mm:ss
  * Apply time defference. (RFC3339 format is UTC, yyyy-MM-dd format is KST)
  */
+@Slf4j
 public class ConvertCalender {
-    private static final SimpleDateFormat SDF_1 = new SimpleDateFormat("yyyy-MM-dd");
-    private static final SimpleDateFormat SDF_2 = new SimpleDateFormat("HH:mm:ss");
-    private static final long TIME_DIFFERENCE = 32_400_000; //9시간
+    private static final long TIME_DIFFERENCE = 32_400_000; // UTC와 KST의 시차, 9시간
+    private static final long ONE_DAY = 86_400_000;
+    private static ThreadLocal<SimpleDateFormat> rfcFormat = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        }
 
+        @Override
+        public SimpleDateFormat get() {
+            return super.get();
+        }
+    };
+
+    private static ThreadLocal<SimpleDateFormat> generalFormat = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd");
+        }
+
+        @Override
+        public SimpleDateFormat get() {
+            return super.get();
+        }
+    };
     // For request TwitchAPI
     // KST -> UTC
-    public static String generalFormatToRfc3339(String time, convertType type) {
-        int[] ymd = getYMD(time);
-        int year = ymd[0];
-        int month = ymd[1];
-        int date = ymd[2];
+    public static String generalToRfc(String time, convertType type) throws ParseException {
+//        SimpleDateFormat rfcFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+//        SimpleDateFormat generalFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        if(type == convertType.ENDED_AT)
-            date++;
+        Date d = generalFormat.get().parse(time);
 
-        Date d = new Date(new GregorianCalendar(year, month, date).getTimeInMillis() - TIME_DIFFERENCE);
+        if(type == convertType.ENDED_AT) {
+            d.setTime(d.getTime() + ONE_DAY);
+        }
 
-        return SDF_1.format(d) + "T" + SDF_2.format(d) + "Z";
+        d.setTime(d.getTime() - TIME_DIFFERENCE);
+
+        return rfcFormat.get().format(d);
     }
 
     // For response Client
     // UTC -> KST
-    public static String rfc3339ToGeneralFormat(String time) {
-        StringTokenizer st = new StringTokenizer(time, "T");
-        String stringYmd = st.nextToken();
-        String stringHms = st.nextToken();
+    public static String rfcToGeneral(String time) throws ParseException {
+//        SimpleDateFormat rfcFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+//        SimpleDateFormat generalFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-        int[] ymd = getYMD(stringYmd);
-        int year = ymd[0];
-        int month = ymd[1];
-        int date = ymd[2];
+        Date d = rfcFormat.get().parse(time);
+        d.setTime(d.getTime() + TIME_DIFFERENCE);
 
-        st = new StringTokenizer(stringHms, ":");
-        int hour = deleteZero(st.nextToken());
-        int minute = deleteZero(st.nextToken());
-        int second = deleteZero(st.nextToken().substring(0, 2));
-//        int hour = Integer.parseInt(st.nextToken());
-//        int minute = Integer.parseInt(st.nextToken());
-//        int second = Integer.parseInt(st.nextToken().substring(0, 2));
-
-        Date d = new Date(new GregorianCalendar(year, month, date, hour,
-                        minute, second).getTimeInMillis() + TIME_DIFFERENCE);
-
-
-        return SDF_1.format(d) + " " + SDF_2.format(d);
-    }
-
-    private static int[] getYMD(String time) {
-        StringTokenizer st = new StringTokenizer(time, "-");
-        int year = Integer.parseInt(st.nextToken());
-
-        String sMonth = st.nextToken();
-        String sDate = st.nextToken().substring(0, 2);
-
-        int month = deleteZero(sMonth) - 1;
-        int date = deleteZero(sDate);
-
-        return new int[] {year, month, date};
-    }
-
-    private static int deleteZero(String s) {
-        return Integer.parseInt(s.charAt(0) == '0' ? Character.toString(s.charAt(1)) : s);
+        return generalFormat.get().format(d);
     }
 
     public enum convertType {

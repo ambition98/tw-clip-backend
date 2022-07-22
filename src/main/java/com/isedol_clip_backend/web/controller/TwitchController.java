@@ -11,6 +11,7 @@ import com.isedol_clip_backend.web.model.TwitchUser;
 import com.isedol_clip_backend.web.model.request.ReqClipRequestDto;
 import com.isedol_clip_backend.web.model.request.ReqTwitchUsersDto;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
+import com.isedol_clip_backend.web.model.response.RespToken;
 import com.isedol_clip_backend.web.model.response.RespTwitchClipsDto;
 import com.isedol_clip_backend.web.model.response.RespTwitchUsersDto;
 import com.isedol_clip_backend.web.service.AccountService;
@@ -21,6 +22,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.text.ParseException;
 
 @Slf4j
 @RestController
@@ -76,6 +80,21 @@ public class TwitchController {
         return MakeResp.make(HttpStatus.OK, "Success", twitchUsersDto);
     }
 
+    @GetMapping("/user")
+    public ResponseEntity<CommonResponse> getTwitchUser(final String token) {
+
+        Authentication authentication
+                = SecurityContextHolder.getContext().getAuthentication();
+
+        log.info("auth: {}", authentication);
+
+        String principal = (String) authentication.getPrincipal();
+        log.info("principal: {}", principal);
+
+        return null;
+//        return MakeResp.make(HttpStatus.OK, "Success", twitchUsersDto);
+    }
+
     @GetMapping("/clips")
     public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipRequestDto requestDto) {
         log.info("RequestDto: " + requestDto);
@@ -101,7 +120,7 @@ public class TwitchController {
 
         try {
             jsonObject = callTwitchAPI.requestClips(requestDto);
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             log.error("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
             return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (RequestException e) {
@@ -110,12 +129,19 @@ public class TwitchController {
         }
 
         String cursor = jsonObject.getJSONObject("pagination").getString("cursor");
-        TwitchClip[] clips = TwitchJsonModelMapper.clipMapping(jsonObject);
+        TwitchClip[] clips;
+        try {
+            clips = TwitchJsonModelMapper.clipMapping(jsonObject);
+        } catch (ParseException e) {
+            log.error("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
+            return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
         RespTwitchClipsDto clipsDto = new RespTwitchClipsDto();
         clipsDto.setClips(clips);
         clipsDto.setCursor(cursor);
 
-        log.info("clipsDto: {}", clipsDto);
+//        log.info("clipsDto: {}", clipsDto);
 
         return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
     }
@@ -162,8 +188,10 @@ public class TwitchController {
         log.info("Refresh token: {}", refreshToken);
 
         accountService.save(entity);
-        response.setHeader("Authorization", "Bearer " + accessToken);
+//        response.setHeader("Authorization", "Bearer " + accessToken);
+        RespToken dto = new RespToken(accessToken);
+        log.info("tokenDto: {}", dto);
 
-        return MakeResp.make(HttpStatus.OK, "Success");
+        return MakeResp.make(HttpStatus.OK, "Success", dto);
     }
 }

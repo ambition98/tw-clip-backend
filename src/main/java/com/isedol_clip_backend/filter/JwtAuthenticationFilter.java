@@ -7,13 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.
-        WebAuthenticationDetailsSource;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -32,12 +30,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         log.info("URI : {}", requestUri);
 
-        String jwt = getJwtFromCookie(request);
+//        String jwt = getJwtFromCookie(request);
+        String jwt = getJwtFromRequest(request);
 //        log.info("JWT: "+jwt);
 
         request.setAttribute("jwt", jwt);
         if (jwt != null && !jwt.isEmpty()) {
-//        if (jwt != null && !jwt.isEmpty()) {
 
             Claims claims = null;
             try {
@@ -75,19 +73,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private String getJwtFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if(cookies != null) {
-            for(Cookie cookie : cookies) {
-//                log.info("cookie: {} = {}", cookie.getName(), cookie.getValue());
-                if(cookie.getName().equals("tk")) {
-                    return cookie.getValue();
-                }
-            }
-        }
-
-        return null;
-    }
+//    private String getJwtFromCookie(HttpServletRequest request) {
+//        Cookie[] cookies = request.getCookies();
+//        if(cookies != null) {
+//            for(Cookie cookie : cookies) {
+////                log.info("cookie: {} = {}", cookie.getName(), cookie.getValue());
+//                if(cookie.getName().equals("tk")) {
+//                    return cookie.getValue();
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 }
 
 

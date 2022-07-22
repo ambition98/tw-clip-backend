@@ -12,6 +12,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 
 @Slf4j
 @Component
@@ -19,10 +20,9 @@ public class CallTwitchAPI {
 
     // https://dev.twitch.tv/docs/api/reference#get-users
     public JSONObject requestUser(int[] id, String[] login) throws IOException, RequestException {
-        log.info("requestUser()");
         URL url = makeRequestUsersUrl(id, login);
 
-        log.info("URL: {}", url);
+//        log.info("URL: {}", url);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
@@ -51,8 +51,7 @@ public class CallTwitchAPI {
     }
 
     //https://dev.twitch.tv/docs/api/reference#get-clips
-    public JSONObject requestClips(ReqClipRequestDto dto) throws IOException, RequestException {
-        log.info("request dto: {}", dto);
+    public JSONObject requestClips(ReqClipRequestDto dto) throws IOException, RequestException, ParseException {
         URL url = makeRequestClipsUrl(dto);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -74,7 +73,7 @@ public class CallTwitchAPI {
                 "&client_secret="+LoadSecret.twitchSecret +
                 "&code="+ code +
                 "&grant_type=authorization_code" +
-                "&redirect_uri=http://localhost:8080/isedol-clip/after-login";
+                "&redirect_uri=http://localhost:8080/afterlogin";
 
         byte[] postData = parameters.getBytes(StandardCharsets.UTF_8);
 
@@ -144,7 +143,7 @@ public class CallTwitchAPI {
     // 때문에 Http status 체크와, 빈 데이터 체크 둘 다 있어야 한다.
     private JSONObject getResponse(HttpURLConnection conn) throws IOException, RequestException {
         int status = conn.getResponseCode();
-        log.info("Http Status: {}", status);
+//        log.info("Http Status: {}", status);
         JSONObject jsonObject;
 
         if(status != 200) {
@@ -179,7 +178,7 @@ public class CallTwitchAPI {
         }
     }
 
-    private URL makeRequestClipsUrl(ReqClipRequestDto dto) throws MalformedURLException {
+    private URL makeRequestClipsUrl(ReqClipRequestDto dto) throws MalformedURLException, ParseException {
         StringBuilder sb = new StringBuilder("https://api.twitch.tv/helix/clips?");
         sb.append("broadcaster_id=").append(dto.getBroadcasterId()).append("&");
 
@@ -189,16 +188,14 @@ public class CallTwitchAPI {
 
         if(dto.getStartedAt() != null) {
             String startedAt =
-                    ConvertCalender.generalFormatToRfc3339(dto.getStartedAt(),
+                    ConvertCalender.generalToRfc(dto.getStartedAt(),
                             ConvertCalender.convertType.START_AT);
-            log.info("startedAt {}", startedAt);
             sb.append("started_at=").append(startedAt).append("&");
         }
 
         if(dto.getEndedAt() != null) {
-            String endedAt = ConvertCalender.generalFormatToRfc3339(dto.getEndedAt(),
+            String endedAt = ConvertCalender.generalToRfc(dto.getEndedAt(),
                     ConvertCalender.convertType.ENDED_AT);
-            log.info("endedAt {}", endedAt);
             sb.append("ended_at=").append(endedAt).append("&");
         }
 
