@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +37,22 @@ public class AccountController {
 
     private final ModelMapper modelMapper;
 
-    //!! 주의: 해당 컨트롤러에 존재하는 api 호출 전에 반드시 verify() 호출해야 함
+    @GetMapping("/test")
+    public ResponseEntity<CommonResponse> getTwitchUser() {
+
+        Authentication authentication
+                = SecurityContextHolder.getContext().getAuthentication();
+
+        log.info("auth: {}", authentication);
+        log.info("principal: {}", authentication.getPrincipal());
+        log.info("authorities: {}", authentication.getAuthorities());
+        log.info("credencial: {}", authentication.getCredentials());
+        log.info("details: {}", authentication.getDetails());
+        log.info("name: {}", authentication.getName());
+
+        return null;
+    }
+
     @PostMapping("/category")
     public ResponseEntity<CommonResponse> postCategory(@Valid final ReqCategoryDto dto) {
         long id = getAccountId();
@@ -100,6 +116,7 @@ public class AccountController {
     }
 
     private long getAccountId() {
-        return Long.parseLong((String) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        String id = SecurityContextHolder.getContext().getAuthentication().getName();
+        return Long.parseLong(id);
     }
 }

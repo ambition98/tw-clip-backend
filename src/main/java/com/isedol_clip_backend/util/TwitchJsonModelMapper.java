@@ -43,6 +43,7 @@ public class TwitchJsonModelMapper {
             clip.setCreatedAt(createdAt);
             clip.setDuration(jsonObject.getDouble("duration"));
             clip.setCreatorName(jsonObject.getString("creator_name"));
+            clip.setUrl(jsonObject.getString("url"));
             clip.setEmbedUrl(jsonObject.getString("embed_url"));
             clip.setThumbnailUrl(jsonObject.getString("thumbnail_url"));
             clip.setViewCount(jsonObject.getInt("view_count"));

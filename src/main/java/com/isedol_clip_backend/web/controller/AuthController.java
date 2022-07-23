@@ -29,7 +29,6 @@ public class AuthController {
     @GetMapping("/verify")
     public ResponseEntity<CommonResponse> auth(HttpServletRequest request) {
         String jwt = (String) request.getAttribute("jwt");
-//        log.info("jwt: {}", jwt);
         try {
             JwtTokenProvider.getTokenClaims(jwt);
         } catch (ExpiredJwtException e) {

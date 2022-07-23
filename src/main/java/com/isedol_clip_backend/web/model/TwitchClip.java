@@ -12,6 +12,8 @@ public class TwitchClip {
 //    private String broadcasterId;
 //    private String login;
     private String embedUrl;
+    private String url;
+    private String broadcasterName;
     private String creatorName;
     private String title;
     private int viewCount;
@@ -19,10 +21,8 @@ public class TwitchClip {
     private String thumbnailUrl;
     private double duration;
     private String broadcasterId;
-    private String broadcasterName;
 
     /* Twitch Api로부터 오는 전체 필드 (당장은 필요없음) */
-//    private String url;
 //    private String videoId;
 //    private String gameId;
 //    private String language;

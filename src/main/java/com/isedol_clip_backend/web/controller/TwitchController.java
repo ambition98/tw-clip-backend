@@ -22,8 +22,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -78,21 +76,6 @@ public class TwitchController {
         log.info(twitchUsersDto.toString());
 
         return MakeResp.make(HttpStatus.OK, "Success", twitchUsersDto);
-    }
-
-    @GetMapping("/user")
-    public ResponseEntity<CommonResponse> getTwitchUser(final String token) {
-
-        Authentication authentication
-                = SecurityContextHolder.getContext().getAuthentication();
-
-        log.info("auth: {}", authentication);
-
-        String principal = (String) authentication.getPrincipal();
-        log.info("principal: {}", principal);
-
-        return null;
-//        return MakeResp.make(HttpStatus.OK, "Success", twitchUsersDto);
     }
 
     @GetMapping("/clips")

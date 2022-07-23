@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
 @Component
 public class JwtTokenProvider {
     private static final Key KEY;
-    private static final long ACCESS_TOKEN_EXPIRY_MS = 1800000; //30분
+//    private static final long ACCESS_TOKEN_EXPIRY_MS = 1800000; //30분
+    private static final long ACCESS_TOKEN_EXPIRY_MS = 30000;
     private static final long REFRESH_TOKEN_EXPIRY_MS = 259200000; //3일
     private static final String AUTHORITIES_KEY = "role";
 
@@ -115,7 +116,7 @@ public class JwtTokenProvider {
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
 
-        User principal = new User(claims.getSubject(), "", authorities);
+        User principal = new User(claims.getId(), "", authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
