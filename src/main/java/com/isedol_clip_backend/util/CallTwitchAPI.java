@@ -19,7 +19,7 @@ import java.text.ParseException;
 public class CallTwitchAPI {
 
     // https://dev.twitch.tv/docs/api/reference#get-users
-    public JSONObject requestUser(int[] id, String[] login) throws IOException, RequestException {
+    public JSONObject requestUser(long[] id, String[] login) throws IOException, RequestException {
         URL url = makeRequestUsersUrl(id, login);
 
 //        log.info("URL: {}", url);
@@ -209,11 +209,11 @@ public class CallTwitchAPI {
         return new URL(sb.toString());
     }
 
-    private URL makeRequestUsersUrl(int[] id, String[] login) throws MalformedURLException {
+    private URL makeRequestUsersUrl(long[] id, String[] login) throws MalformedURLException {
         StringBuilder sb = new StringBuilder();
 
         if(id != null) {
-            for(int i : id) {
+            for(long i : id) {
                 sb.append("id=").append(i).append("&");
             }
         }

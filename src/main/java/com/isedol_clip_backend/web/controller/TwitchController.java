@@ -11,14 +11,13 @@ import com.isedol_clip_backend.web.model.TwitchUser;
 import com.isedol_clip_backend.web.model.request.ReqClipRequestDto;
 import com.isedol_clip_backend.web.model.request.ReqTwitchUsersDto;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
-import com.isedol_clip_backend.web.model.response.RespToken;
+import com.isedol_clip_backend.web.model.response.RespUser;
 import com.isedol_clip_backend.web.model.response.RespTwitchClipsDto;
 import com.isedol_clip_backend.web.model.response.RespTwitchUsersDto;
 import com.isedol_clip_backend.web.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -39,7 +38,6 @@ public class TwitchController {
 
     private final CallTwitchAPI callTwitchAPI;
     private final AccountService accountService;
-    private ModelMapper modelMapper;
 
     @GetMapping("/users")
     public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) {
@@ -50,7 +48,6 @@ public class TwitchController {
         }
 
         JSONObject jsonObject;
-
         try {
             jsonObject = callTwitchAPI.requestUser(requestDto.getId(), requestDto.getLogin());
         } catch (IOException e) {
@@ -67,12 +64,6 @@ public class TwitchController {
         RespTwitchUsersDto twitchUsersDto = new RespTwitchUsersDto();
         twitchUsersDto.setUsers(twitchUsers);
 
-//        try {
-//            String json = new ObjectMapper().writeValueAsString(twitchUsersDto);
-//        } catch (JsonProcessingException e) {
-//            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, "JSON Parsing error");
-//        }
-
         log.info(twitchUsersDto.toString());
 
         return MakeResp.make(HttpStatus.OK, "Success", twitchUsersDto);
@@ -82,24 +73,6 @@ public class TwitchController {
     public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipRequestDto requestDto) {
         log.info("RequestDto: " + requestDto);
         JSONObject jsonObject;
-
-//        try {
-//            jsonObject = callTwitchAPI.requestUser(null,
-//                    new String[]{requestDto.getLogin()});
-//        } catch (IOException e) {
-//            log.error("Http status: {}, Message: {}", HttpStatus.INTERNAL_SERVER_ERROR,
-//                    e.getMessage());
-//            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-//
-//        } catch (RequestException e) {
-//            log.warn("Http status: {}, Message: {}", e.getHttpStatus().value(), e.getMessage());
-//            return MakeResp.make(e.getHttpStatus(), e.getMessage());
-//        }
-//
-//        String broadcasterId = jsonObject.getJSONArray("data")
-//                .getJSONObject(0).getString("id");
-//        log.info("broadcasterId: {}", broadcasterId);
-//        requestDto.setBroadcasterId(broadcasterId);
 
         try {
             jsonObject = callTwitchAPI.requestClips(requestDto);
@@ -171,8 +144,21 @@ public class TwitchController {
         log.info("Refresh token: {}", refreshToken);
 
         accountService.save(entity);
-//        response.setHeader("Authorization", "Bearer " + accessToken);
-        RespToken dto = new RespToken(accessToken);
+
+        try {
+            jsonObject = callTwitchAPI.requestUser(new long[]{twitchId}, null);
+        } catch (IOException e) {
+            log.error("Fail to request twitch user");
+            log.warn("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
+            return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
+
+        } catch (RequestException e) {
+            log.warn("Http status: {}, Message: {}", e.getHttpStatus(), e.getMessage());
+            return MakeResp.make(e.getHttpStatus(), e.getMessage());
+        }
+
+        TwitchUser[] twitchUser = TwitchJsonModelMapper.userMapping(jsonObject);
+        RespUser dto = new RespUser(accessToken, twitchUser[0]);
         log.info("tokenDto: {}", dto);
 
         return MakeResp.make(HttpStatus.OK, "Success", dto);

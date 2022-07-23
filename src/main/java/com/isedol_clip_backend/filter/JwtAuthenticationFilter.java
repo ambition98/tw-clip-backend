@@ -26,6 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 //        String jwt = getJwtFromCookie(request);
         String jwt = getJwtFromHeader(request);
+        request.setAttribute("jwt", jwt);
 
         if(jwt == null || jwt.isEmpty()) {
             log.info("Has not Token");

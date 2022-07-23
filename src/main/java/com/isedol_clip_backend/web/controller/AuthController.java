@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,41 +22,43 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AccountService accountService;
 
     @GetMapping("/verify")
-    public ResponseEntity<CommonResponse> auth(HttpServletRequest request) {
-        String jwt = (String) request.getAttribute("jwt");
-        try {
-            JwtTokenProvider.getTokenClaims(jwt);
-        } catch (ExpiredJwtException e) {
-            log.info("bad request");
-            return MakeResp.make(HttpStatus.BAD_REQUEST, "Need refresh access token");
-        } catch(Exception e) {
-            log.info("unauthorized");
-            return MakeResp.make(HttpStatus.UNAUTHORIZED, "Need Login");
-        }
+    public ResponseEntity<CommonResponse> verify(HttpServletRequest request) {
+//        String jwt = (String) request.getAttribute("jwt");
+//        log.info("jwt: {}", jwt);
+//        try {
+//            JwtTokenProvider.getTokenClaims(jwt);
+//        } catch (ExpiredJwtException e) {
+//            log.info("bad request");
+//            return MakeResp.make(HttpStatus.BAD_REQUEST, "Need refresh access token");
+//        } catch(Exception e) {
+//            log.info("unauthorized");
+//            return MakeResp.make(HttpStatus.UNAUTHORIZED, "Need Login");
+//        }
+//        ResponseEntity<CommonResponse> errorResponse = getErrorResponse(jwt);
+//        if(errorResponse != null) {
+//            return errorResponse;
+//        }
 
         return MakeResp.make(HttpStatus.OK, "USER");
+
     }
 
     @GetMapping("/refresh")
     public ResponseEntity<CommonResponse> refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
-        String jwt = (String) request.getAttribute("jwt");
-        String sid = null;
+//        String jwt = (String) request.getAttribute("jwt");
+//
+//        ResponseEntity<CommonResponse> errorResponse = getErrorResponse(jwt);
+//        if(errorResponse != null) {
+//            return errorResponse;
+//        }
 
-        try {
-            JwtTokenProvider.getTokenClaims(jwt);
-        } catch(ExpiredJwtException e) {
-            sid = JwtTokenProvider.getIdWithoutValidate(jwt);
-        } catch (Exception e) {
-            return MakeResp.make(HttpStatus.UNAUTHORIZED, "Need Login");
-        }
-
-        long id = Long.parseLong(sid);
+        long id = getId();
 
         AccountEntity entity;
         try {
@@ -82,25 +85,53 @@ public class AuthController {
 
     @GetMapping("/logout")
     public ResponseEntity<CommonResponse> logout(HttpServletRequest request, HttpServletResponse response) {
-        String jwt = (String) request.getAttribute("jwt");
-        try {
-            JwtTokenProvider.getTokenClaims(jwt);
-        } catch (Exception e) {
-            return MakeResp.make(HttpStatus.OK, "Success");
-        }
+//        String jwt = (String) request.getAttribute("jwt");
+//        try {
+//            JwtTokenProvider.getTokenClaims(jwt);
+//        } catch (Exception e) {
+//            return MakeResp.make(HttpStatus.OK, "Success");
+//        }
 
-        long id = Long.parseLong(JwtTokenProvider.getIdWithoutValidate(jwt));
+        long id = getId();
 
         try {
             AccountEntity entity = accountService.getById(id);
-
             entity.setRefreshToken(null);
             entity.setTwitchAccessToken(null);
             entity.setTwitchRefreshToken(null);
 
             accountService.save(entity);
-        } catch (NoExistedDataException e) {}
+        } catch (NoExistedDataException e) {
+            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, "Not Existed Account Id");
+        }
 
         return MakeResp.make(HttpStatus.OK, "Success");
+    }
+
+//    private boolean isValidToken(String token) {
+//        try {
+//            JwtTokenProvider.getTokenClaims(token);
+//        } catch (Exception e) {
+//            return false;
+//        }
+//
+//        return true;
+//    }
+
+//    private ResponseEntity<CommonResponse> getErrorResponse(String token) {
+//        try {
+//            JwtTokenProvider.getTokenClaims(token);
+//        } catch (ExpiredJwtException e) {
+//            return MakeResp.make(HttpStatus.UNAUTHORIZED, "Need refresh access token");
+//        } catch (Exception e) {
+//            return MakeResp.make(HttpStatus.BAD_REQUEST, "Need Login");
+//        }
+//
+//        return null;
+//    }
+
+    private long getId() {
+        String id = SecurityContextHolder.getContext().getAuthentication().getName();
+        return Long.parseLong(id);
     }
 }

@@ -8,7 +8,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class ReqTwitchUsersDto {
-    private int[] id;
+    private long[] id;
     private String[] login;
 
     public boolean isValid() {
