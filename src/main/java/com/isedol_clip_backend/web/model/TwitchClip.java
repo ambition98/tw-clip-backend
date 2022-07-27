@@ -21,9 +21,10 @@ public class TwitchClip {
     private String thumbnailUrl;
     private double duration;
     private String broadcasterId;
+    private String videoId;
+    private Integer vodOffset;
 
     /* Twitch Api로부터 오는 전체 필드 (당장은 필요없음) */
-//    private String videoId;
 //    private String gameId;
 //    private String language;
 //    private String creatorId;

@@ -1,6 +1,7 @@
 package com.isedol_clip_backend.config;
 
 import com.isedol_clip_backend.auth.JwtAuthenticationEntryPoint;
+import com.isedol_clip_backend.filter.AccessControllFilter;
 import com.isedol_clip_backend.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,11 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
                 .headers()
                 .addHeaderWriter(new XFrameOptionsHeaderWriter(new WhiteListedAllowFromStrategy(Arrays.asList("localhost"))))
                 .frameOptions().sameOrigin()
-                .and().addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                .and()
+//                .addFilterBefore(new AccessControllFilter(), AccessControllFilter.class)
+                .addFilterBefore(new AccessControllFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
     }
 
 //    @Bean

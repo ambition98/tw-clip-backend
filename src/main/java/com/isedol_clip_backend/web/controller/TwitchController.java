@@ -2,18 +2,17 @@ package com.isedol_clip_backend.web.controller;
 
 import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.RequestException;
-import com.isedol_clip_backend.util.CallTwitchAPI;
-import com.isedol_clip_backend.util.MakeResp;
-import com.isedol_clip_backend.util.TwitchJsonModelMapper;
+import com.isedol_clip_backend.util.*;
+import com.isedol_clip_backend.util.aop.CheckRunningTime;
 import com.isedol_clip_backend.web.entity.AccountEntity;
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
-import com.isedol_clip_backend.web.model.request.ReqClipRequestDto;
+import com.isedol_clip_backend.web.model.request.ReqClipsDto;
 import com.isedol_clip_backend.web.model.request.ReqTwitchUsersDto;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
-import com.isedol_clip_backend.web.model.response.RespUser;
 import com.isedol_clip_backend.web.model.response.RespTwitchClipsDto;
 import com.isedol_clip_backend.web.model.response.RespTwitchUsersDto;
+import com.isedol_clip_backend.web.model.response.RespUser;
 import com.isedol_clip_backend.web.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +37,23 @@ public class TwitchController {
 
     private final CallTwitchAPI callTwitchAPI;
     private final AccountService accountService;
+    private final HotclipsStorage hotclipsStorage;
+
+    @GetMapping("/test")
+    public ResponseEntity<CommonResponse> test() throws IOException, ParseException, RequestException {
+        ReqClipsDto dto = new ReqClipsDto();
+        dto.setBroadcasterId("707328484");
+        dto.setStartedAt("2022-07-19T15:00:00Z");
+        dto.setEndedAt("2022-07-27T15:00:00Z");
+        dto.setFirst(100);
+        dto.setAfter("eyJiIjpudWxsLCJhIjp7IkN1cnNvciI6Ik5UQXoifX0");
+
+        JSONObject json = callTwitchAPI.requestClips(dto);
+        System.out.println(json);
+        System.out.println(json.getJSONObject("pagination"));
+
+        return null;
+    }
 
     @GetMapping("/users")
     public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) {
@@ -69,8 +85,9 @@ public class TwitchController {
         return MakeResp.make(HttpStatus.OK, "Success", twitchUsersDto);
     }
 
+    @CheckRunningTime
     @GetMapping("/clips")
-    public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipRequestDto requestDto) {
+    public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipsDto requestDto) {
         log.info("RequestDto: " + requestDto);
         JSONObject jsonObject;
 
@@ -99,6 +116,27 @@ public class TwitchController {
 
 //        log.info("clipsDto: {}", clipsDto);
 
+        return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
+    }
+
+    @CheckRunningTime
+    @GetMapping("/hotclips")
+    public ResponseEntity<CommonResponse> getHotclips(final String period, final int page) {
+        TwitchClip[] clipsDto = null;
+
+        switch (period) {
+            case "week":
+                clipsDto = hotclipsStorage.getHotclips(HotclipPeirod.WEEK, page);
+                break;
+            case "month":
+                clipsDto = hotclipsStorage.getHotclips(HotclipPeirod.MONTH, page);
+                break;
+            case "quarter":
+                clipsDto = hotclipsStorage.getHotclips(HotclipPeirod.QUARTER, page);
+        }
+
+        for(TwitchClip clip : clipsDto)
+            log.info(clip.toString());
         return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
     }
 

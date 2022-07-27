@@ -1,7 +1,7 @@
 package com.isedol_clip_backend.util;
 
 import com.isedol_clip_backend.exception.RequestException;
-import com.isedol_clip_backend.web.model.request.ReqClipRequestDto;
+import com.isedol_clip_backend.web.model.request.ReqClipsDto;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -51,7 +51,8 @@ public class CallTwitchAPI {
     }
 
     //https://dev.twitch.tv/docs/api/reference#get-clips
-    public JSONObject requestClips(ReqClipRequestDto dto) throws IOException, RequestException, ParseException {
+//    @CheckRunningTime
+    public JSONObject requestClips(ReqClipsDto dto) throws IOException, RequestException, ParseException {
         URL url = makeRequestClipsUrl(dto);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -178,7 +179,7 @@ public class CallTwitchAPI {
         }
     }
 
-    private URL makeRequestClipsUrl(ReqClipRequestDto dto) throws MalformedURLException, ParseException {
+    private URL makeRequestClipsUrl(ReqClipsDto dto) throws MalformedURLException, ParseException {
         StringBuilder sb = new StringBuilder("https://api.twitch.tv/helix/clips?");
         sb.append("broadcaster_id=").append(dto.getBroadcasterId()).append("&");
 
@@ -204,7 +205,7 @@ public class CallTwitchAPI {
         }
 
         sb.deleteCharAt(sb.length() - 1);
-        log.info("url: " + sb);
+        log.info("API uri: " + sb);
 
         return new URL(sb.toString());
     }

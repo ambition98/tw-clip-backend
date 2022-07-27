@@ -49,6 +49,11 @@ public class TwitchJsonModelMapper {
             clip.setViewCount(jsonObject.getInt("view_count"));
             clip.setBroadcasterId(jsonObject.getString("broadcaster_id"));
             clip.setBroadcasterName(jsonObject.getString("broadcaster_name"));
+            clip.setVideoId(jsonObject.getString("video_id"));
+
+            if(!jsonObject.isNull("vod_offset"))
+                clip.setVodOffset((jsonObject.getInt("vod_offset")));
+
 
             clips[i] = clip;
         }

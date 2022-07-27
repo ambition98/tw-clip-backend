@@ -1,15 +1,15 @@
 package com.isedol_clip_backend.web.model.request;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
 @ToString
-public class ReqClipRequestDto {
+@AllArgsConstructor
+@NoArgsConstructor
+public class ReqClipsDto {
     @NotBlank(message = "Required Parameter. String login")
     private String broadcasterId;
     private String after; // cursor
