@@ -22,11 +22,8 @@ public class CallTwitchAPI {
     public JSONObject requestUser(long[] id, String[] login) throws IOException, RequestException {
         URL url = makeRequestUsersUrl(id, login);
 
-//        log.info("URL: {}", url);
-
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
-        conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
+        setAuthHeader(conn);
 
         JSONObject jsonObject = getResponse(conn);
         checkEmptyData(jsonObject);
@@ -40,11 +37,10 @@ public class CallTwitchAPI {
         log.info("URL: {}", url);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("Authorization", "Bearer " + token);
-        conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
-
+        setAuthHeader(conn);
         JSONObject jsonObject = getResponse(conn);
         checkEmptyData(jsonObject);
+
         log.info("Response twitch token: " + jsonObject);
 
         return jsonObject;
@@ -64,6 +60,15 @@ public class CallTwitchAPI {
 //        log.info("Response twitch clips: " + jsonObject);
 
         return jsonObject;
+    }
+
+    public JSONObject searchUser(String keyword) throws IOException, RequestException {
+        URL url = new URL("https://api.twitch.tv/helix/search/channels?first=100&query=" + keyword);
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        setAuthHeader(conn);
+
+        return getResponse(conn);
     }
 
     // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#authorization-code-grant-flow
@@ -149,7 +154,7 @@ public class CallTwitchAPI {
 
         if(status != 200) {
             jsonObject = convertResponseToJson(conn.getErrorStream());
-            log.warn("Error reseponse: {}", jsonObject);
+            log.error("Error reseponse: {}", jsonObject);
             throw new RequestException(jsonObject.getString("message"), HttpStatus.resolve(status));
         }
 
@@ -230,4 +235,8 @@ public class CallTwitchAPI {
         return new URL("https://api.twitch.tv/helix/users?" + sb);
     }
 
+    private void setAuthHeader(HttpURLConnection conn) {
+        conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
+        conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
+    }
 }

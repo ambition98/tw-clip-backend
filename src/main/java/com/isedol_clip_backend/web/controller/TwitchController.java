@@ -16,6 +16,7 @@ import com.isedol_clip_backend.web.model.response.RespUser;
 import com.isedol_clip_backend.web.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,23 +39,7 @@ public class TwitchController {
 
     private final CallTwitchAPI callTwitchAPI;
     private final AccountService accountService;
-    private final HotclipsStorage hotclipsStorage;
-
-    @GetMapping("/test")
-    public ResponseEntity<CommonResponse> test() throws IOException, ParseException, RequestException {
-        ReqClipsDto dto = new ReqClipsDto();
-        dto.setBroadcasterId("707328484");
-        dto.setStartedAt("2022-07-19T15:00:00Z");
-        dto.setEndedAt("2022-07-27T15:00:00Z");
-        dto.setFirst(100);
-        dto.setAfter("eyJiIjpudWxsLCJhIjp7IkN1cnNvciI6Ik5UQXoifX0");
-
-        JSONObject json = callTwitchAPI.requestClips(dto);
-        System.out.println(json);
-        System.out.println(json.getJSONObject("pagination"));
-
-        return null;
-    }
+    private final TwitchStorage twitchStorage;
 
     @GetMapping("/users")
     public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) {
@@ -62,6 +47,11 @@ public class TwitchController {
         if(!requestDto.isValid()) {
             return MakeResp.make(HttpStatus.BAD_REQUEST
                     , "Parameter \"id\" and \"login\" is limit 100 or greater then 1");
+        }
+
+        if(requestDto.getId().length == 1 && twitchStorage.isIsedol(requestDto.getId()[0])) {
+            TwitchUser user = twitchStorage.getIsedolInfo(requestDto.getId()[0]);
+            return MakeResp.make(HttpStatus.OK, "Success", user);
         }
 
         JSONObject jsonObject;
@@ -127,19 +117,33 @@ public class TwitchController {
         log.info("period: {}, page: {}", period, page);
         switch (period) {
             case "week":
-                clipsDto = hotclipsStorage.getHotclips(HotclipPeirod.WEEK, page);
+                clipsDto = twitchStorage.getHotclips(HotclipPeirod.WEEK, page);
                 break;
             case "month":
-                clipsDto = hotclipsStorage.getHotclips(HotclipPeirod.MONTH, page);
+                clipsDto = twitchStorage.getHotclips(HotclipPeirod.MONTH, page);
                 break;
             case "quarter":
-                clipsDto = hotclipsStorage.getHotclips(HotclipPeirod.QUARTER, page);
+                clipsDto = twitchStorage.getHotclips(HotclipPeirod.QUARTER, page);
         }
 
         log.info("dto: {}", Arrays.toString(clipsDto));
         return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
     }
 
+    @GetMapping("/search/user")
+    public ResponseEntity<CommonResponse> searchUser(@NonNull final String keyword) throws IOException, RequestException {
+        JSONObject searchRes = callTwitchAPI.searchUser(keyword);
+        JSONArray arr = searchRes.getJSONArray("data");
+        long[] id = new long[arr.length()];
+        for(int i=0; i<arr.length(); i++) {
+            id[i] = Long.parseLong(arr.getJSONObject(i).getString("id"));
+        }
+
+        JSONObject usersObj = callTwitchAPI.requestUser(id, null);
+        TwitchUser[] users = TwitchJsonModelMapper.userMapping(usersObj);
+
+        return MakeResp.make(HttpStatus.OK, "Success", users);
+    }
     @GetMapping("/oauth")
     public ResponseEntity<CommonResponse> getTwitchToken(@NonNull final String code,
                                                          final HttpServletResponse response) {

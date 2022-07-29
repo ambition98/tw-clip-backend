@@ -11,7 +11,7 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class ReqClipsDto {
     @NotBlank(message = "Required Parameter. String login")
-    private String broadcasterId;
+    private long broadcasterId;
     private String after; // cursor
     private int first; // count
     private String startedAt;

@@ -17,10 +17,11 @@ public class TwitchJsonModelMapper {
             TwitchUser user = new TwitchUser();
             JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-            user.setId(jsonObject.getString("id"));
+            user.setId(Long.parseLong(jsonObject.getString("id")));
             user.setLogin(jsonObject.getString("login"));
             user.setDisplayName(jsonObject.getString("display_name"));
             user.setProfileImageUrl(jsonObject.getString("profile_image_url"));
+            user.setBroadcasterType(jsonObject.getString("broadcaster_type"));
 
             users[i] = user;
         }

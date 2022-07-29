@@ -1,17 +1,32 @@
 package com.isedol_clip_backend.util;
 
 import com.isedol_clip_backend.web.model.TwitchClip;
+import com.isedol_clip_backend.web.model.TwitchUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 @Component
 @Slf4j
-public class HotclipsStorage {
+public class TwitchStorage {
+    private HashMap<Long, TwitchUser> isedolInfo;
     private ArrayList<TwitchClip[]> weekHotclips;
     private ArrayList<TwitchClip[]> monthHotclips;
     private ArrayList<TwitchClip[]> quarterHotclips;
+
+    public TwitchUser getIsedolInfo(long id) {
+        return isedolInfo.get(id);
+    }
+
+    public boolean isIsedol(long id) {
+        return isedolInfo.containsKey(id);
+    }
+
+    public void setIsedolInfo(HashMap<Long, TwitchUser> isedolInfo) {
+        this.isedolInfo = isedolInfo;
+    }
 
     public void setHotclips(HotclipPeirod period
             , ArrayList<TwitchClip[]> clips) {
