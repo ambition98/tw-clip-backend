@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
 
 @Slf4j
 @RestController
@@ -123,7 +124,7 @@ public class TwitchController {
     @GetMapping("/hotclips")
     public ResponseEntity<CommonResponse> getHotclips(final String period, final int page) {
         TwitchClip[] clipsDto = null;
-
+        log.info("period: {}, page: {}", period, page);
         switch (period) {
             case "week":
                 clipsDto = hotclipsStorage.getHotclips(HotclipPeirod.WEEK, page);
@@ -135,8 +136,7 @@ public class TwitchController {
                 clipsDto = hotclipsStorage.getHotclips(HotclipPeirod.QUARTER, page);
         }
 
-        for(TwitchClip clip : clipsDto)
-            log.info(clip.toString());
+        log.info("dto: {}", Arrays.toString(clipsDto));
         return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
     }
 

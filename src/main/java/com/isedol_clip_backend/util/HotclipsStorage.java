@@ -37,7 +37,7 @@ public class HotclipsStorage {
                 case QUARTER:
                     return quarterHotclips.get(page-1);
             }
-        } catch (NullPointerException e) {
+        } catch (IndexOutOfBoundsException e) {
             return null;
         }
 

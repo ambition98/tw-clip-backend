@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -40,6 +41,7 @@ public class CallTwitchApiSchedule {
     public static final int QUARTER_SIZE = 30;
 
     @CheckRunningTime
+    @Async
     @Scheduled(cron = "0 0 * * * *")
     public void setNewHotclips() throws InterruptedException {
         log.info("[ Scheduled ]: setNewHotclips");
@@ -97,7 +99,8 @@ public class CallTwitchApiSchedule {
 
         for(int i=0; i<period.getValue(); i++) {
             int idx = 0;
-            TwitchClip[] clips = new TwitchClip[FIRST * BROADCASTER_ID.length];
+//            TwitchClip[] clips = new TwitchClip[FIRST * BROADCASTER_ID.length];
+            ArrayList<TwitchClip> clips = new ArrayList<>();
 
             for(int j=0; j<BROADCASTER_ID.length; j++) {
                 JSONObject jsonObject;
@@ -120,14 +123,14 @@ public class CallTwitchApiSchedule {
                     throw new RuntimeException(e);
                 }
 
-                for(TwitchClip clip : tempClips)
-                    clips[idx++] = clip;
+                clips.addAll(Arrays.asList(tempClips));
                 Thread.sleep(100);
             }
 
-            Arrays.sort(clips, getComparator());
-            list.add(clips);
-            if(hasNextData(cursor))
+//            Arrays.sort(clips, getComparator());
+            clips.sort(getComparator());
+            list.add(clips.toArray(new TwitchClip[0]));
+            if(!hasNextData(cursor))
                 break;
         }
 
@@ -144,7 +147,7 @@ public class CallTwitchApiSchedule {
 
     private String getCursor(JSONObject jsonObject) {
         try {
-            return jsonObject.getString("pagination");
+            return jsonObject.getJSONObject("pagination").getString("cursor");
         } catch (JSONException e) {
             return null;
         }
