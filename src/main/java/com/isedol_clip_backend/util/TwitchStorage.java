@@ -20,6 +20,10 @@ public class TwitchStorage {
         return isedolInfo.get(id);
     }
 
+    public HashMap<Long, TwitchUser> getIsedolInfo() {
+        return isedolInfo;
+    }
+
     public boolean isIsedol(long id) {
         return isedolInfo.containsKey(id);
     }

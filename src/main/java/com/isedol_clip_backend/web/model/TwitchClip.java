@@ -9,8 +9,6 @@ import lombok.ToString;
 @ToString
 public class TwitchClip {
     private String id;
-//    private String broadcasterId;
-//    private String login;
     private String embedUrl;
     private String url;
     private String broadcasterName;

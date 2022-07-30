@@ -21,7 +21,7 @@ public class PostConstructor {
         dateSchedule.setDate();
         dateSchedule.setNow();
 
-        callTwitchApiSchedule.setHotclips();
         callTwitchApiSchedule.setIsedolInfo();
+        callTwitchApiSchedule.setHotclips();
     }
 }

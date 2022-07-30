@@ -13,10 +13,10 @@ public class TwitchUser {
     private String displayName;
     private String profileImageUrl;
     private String broadcasterType;
+    private String description;
 
     /* Twitch Api로부터 오는 전체 필드 (당장은 필요없음) */
 //    private String type;
-//    private String description;
 //    private String offlineImageUrl;
 //    private int viewCount;
 //    private String createdAt;

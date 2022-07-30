@@ -11,7 +11,6 @@ import com.isedol_clip_backend.web.model.request.ReqClipsDto;
 import com.isedol_clip_backend.web.model.request.ReqTwitchUsersDto;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
 import com.isedol_clip_backend.web.model.response.RespTwitchClipsDto;
-import com.isedol_clip_backend.web.model.response.RespTwitchUsersDto;
 import com.isedol_clip_backend.web.model.response.RespUser;
 import com.isedol_clip_backend.web.service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +50,7 @@ public class TwitchController {
 
         if(requestDto.getId().length == 1 && twitchStorage.isIsedol(requestDto.getId()[0])) {
             TwitchUser user = twitchStorage.getIsedolInfo(requestDto.getId()[0]);
-            return MakeResp.make(HttpStatus.OK, "Success", user);
+            return MakeResp.make(HttpStatus.OK, "Success", new TwitchUser[]{user});
         }
 
         JSONObject jsonObject;
@@ -67,13 +66,10 @@ public class TwitchController {
             return MakeResp.make(e.getHttpStatus(), e.getMessage());
         }
 
-        TwitchUser[] twitchUsers = TwitchJsonModelMapper.userMapping(jsonObject);
-        RespTwitchUsersDto twitchUsersDto = new RespTwitchUsersDto();
-        twitchUsersDto.setUsers(twitchUsers);
+        TwitchUser[] users = TwitchJsonModelMapper.userMapping(jsonObject);
+        log.info(Arrays.toString(users));
 
-        log.info(twitchUsersDto.toString());
-
-        return MakeResp.make(HttpStatus.OK, "Success", twitchUsersDto);
+        return MakeResp.make(HttpStatus.OK, "Success", users);
     }
 
     @CheckRunningTime
@@ -107,26 +103,6 @@ public class TwitchController {
 
 //        log.info("clipsDto: {}", clipsDto);
 
-        return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
-    }
-
-    @CheckRunningTime
-    @GetMapping("/hotclips")
-    public ResponseEntity<CommonResponse> getHotclips(final String period, final int page) {
-        TwitchClip[] clipsDto = null;
-        log.info("period: {}, page: {}", period, page);
-        switch (period) {
-            case "week":
-                clipsDto = twitchStorage.getHotclips(HotclipPeirod.WEEK, page);
-                break;
-            case "month":
-                clipsDto = twitchStorage.getHotclips(HotclipPeirod.MONTH, page);
-                break;
-            case "quarter":
-                clipsDto = twitchStorage.getHotclips(HotclipPeirod.QUARTER, page);
-        }
-
-        log.info("dto: {}", Arrays.toString(clipsDto));
         return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
     }
 

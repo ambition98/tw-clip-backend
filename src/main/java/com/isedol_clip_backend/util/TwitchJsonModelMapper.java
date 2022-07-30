@@ -22,6 +22,7 @@ public class TwitchJsonModelMapper {
             user.setDisplayName(jsonObject.getString("display_name"));
             user.setProfileImageUrl(jsonObject.getString("profile_image_url"));
             user.setBroadcasterType(jsonObject.getString("broadcaster_type"));
+            user.setDescription(jsonObject.getString("description"));
 
             users[i] = user;
         }
