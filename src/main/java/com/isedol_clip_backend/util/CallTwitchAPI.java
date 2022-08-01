@@ -37,7 +37,9 @@ public class CallTwitchAPI {
         log.info("URL: {}", url);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        setAuthHeader(conn);
+        conn.setRequestProperty("Authorization", "Bearer " + token);
+        conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
+
         JSONObject jsonObject = getResponse(conn);
         checkEmptyData(jsonObject);
 
@@ -74,6 +76,7 @@ public class CallTwitchAPI {
     // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#authorization-code-grant-flow
     public JSONObject requestOauth(String code) throws IOException, RequestException {
         URL url = new URL("https://id.twitch.tv/oauth2/token");
+        log.info("URL: {}", url);
 
         String parameters = "client_id="+LoadSecret.twitchClientId +
                 "&client_secret="+LoadSecret.twitchSecret +

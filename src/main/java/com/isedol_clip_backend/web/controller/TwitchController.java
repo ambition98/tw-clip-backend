@@ -16,6 +16,7 @@ import com.isedol_clip_backend.web.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -87,8 +88,7 @@ public class TwitchController {
             log.warn("Http status: {}, Message: {}", e.getHttpStatus().value(), e.getMessage());
             return MakeResp.make(e.getHttpStatus(), e.getMessage());
         }
-
-        String cursor = jsonObject.getJSONObject("pagination").getString("cursor");
+        String cursor = getCursor(jsonObject);
         TwitchClip[] clips;
         try {
             clips = TwitchJsonModelMapper.clipMapping(jsonObject);
@@ -180,5 +180,13 @@ public class TwitchController {
         log.info("tokenDto: {}", dto);
 
         return MakeResp.make(HttpStatus.OK, "Success", dto);
+    }
+
+    private String getCursor(JSONObject jsonObject) {
+        try {
+            return jsonObject.getJSONObject("pagination").getString("cursor");
+        } catch (JSONException e) {
+            return null;
+        }
     }
 }
