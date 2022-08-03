@@ -57,7 +57,7 @@ public class JwtTokenProvider {
     }
 
     //!!주의: 해당 메서드는 토큰 유효성 검사를 하지 않음
-    public static String getIdWithoutValidate(String token) {
+    public static Long getIdWithoutValidate(String token) {
         StringTokenizer st = new StringTokenizer(token, ".");
         st.nextToken();
         Base64.Decoder decoder = Base64.getDecoder();
@@ -71,7 +71,7 @@ public class JwtTokenProvider {
             return null;
         }
 
-        return map.get("jti");
+        return Long.parseLong(map.get("jti"));
     }
 
     public static Claims getTokenClaims(String token) throws Exception {

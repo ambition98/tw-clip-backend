@@ -56,7 +56,7 @@ public class TwitchStorage {
                 case QUARTER:
                     return quarterHotclips.get(page-1);
             }
-        } catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException | NullPointerException e) {
             return null;
         }
 

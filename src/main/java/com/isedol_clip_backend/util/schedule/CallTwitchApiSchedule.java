@@ -93,7 +93,6 @@ public class CallTwitchApiSchedule {
                 cursor[j] = getCursor(jsonObject);
                 TwitchClip[] tempClips;
                 tempClips = twitchMapper.mappingClips(jsonObject);
-                log.info("clips: {}", Arrays.toString(tempClips));
 
                 clips.addAll(Arrays.asList(tempClips));
                 Thread.sleep(100);
