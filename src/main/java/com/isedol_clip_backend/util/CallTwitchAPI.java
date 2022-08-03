@@ -3,6 +3,7 @@ package com.isedol_clip_backend.util;
 import com.isedol_clip_backend.exception.RequestException;
 import com.isedol_clip_backend.web.model.request.ReqClipsDto;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,7 @@ import java.text.ParseException;
 public class CallTwitchAPI {
 
     // https://dev.twitch.tv/docs/api/reference#get-users
-    public JSONObject requestUser(long[] id, String[] login) throws IOException, RequestException {
+    public JSONArray requestUser(long[] id, String[] login) throws IOException, RequestException {
         URL url = makeRequestUsersUrl(id, login);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -29,12 +30,12 @@ public class CallTwitchAPI {
         checkEmptyData(jsonObject);
         log.info("Response twitch user: " + jsonObject);
 
-        return jsonObject;
+        return jsonObject.getJSONArray("data");
     }
 
     public JSONObject requestUserByToken(String token) throws IOException, RequestException {
         URL url = new URL("https://api.twitch.tv/helix/users");
-        log.info("URL: {}", url);
+        log.info("Twitch URL: {}", url);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Bearer " + token);
@@ -59,7 +60,6 @@ public class CallTwitchAPI {
 
         JSONObject jsonObject = getResponse(conn);
         checkEmptyData(jsonObject);
-//        log.info("Response twitch clips: " + jsonObject);
 
         return jsonObject;
     }
@@ -76,7 +76,7 @@ public class CallTwitchAPI {
     // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#authorization-code-grant-flow
     public JSONObject requestOauth(String code) throws IOException, RequestException {
         URL url = new URL("https://id.twitch.tv/oauth2/token");
-        log.info("URL: {}", url);
+        log.info("Twitch API URL: {}", url);
 
         String parameters = "client_id="+LoadSecret.twitchClientId +
                 "&client_secret="+LoadSecret.twitchSecret +
@@ -99,6 +99,7 @@ public class CallTwitchAPI {
     // https://dev.twitch.tv/docs/authentication/validate-tokens
     public boolean checkAccessTokenValidation() throws IOException {
         URL url = new URL("https://id.twitch.tv/oauth2/validate");
+        log.info("Twitch API URL: {}", url);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
@@ -152,7 +153,6 @@ public class CallTwitchAPI {
     // 때문에 Http status 체크와, 빈 데이터 체크 둘 다 있어야 한다.
     private JSONObject getResponse(HttpURLConnection conn) throws IOException, RequestException {
         int status = conn.getResponseCode();
-//        log.info("Http Status: {}", status);
         JSONObject jsonObject;
 
         if(status != 200) {
@@ -213,7 +213,7 @@ public class CallTwitchAPI {
         }
 
         sb.deleteCharAt(sb.length() - 1);
-        log.info("API uri: " + sb);
+//        log.info("Twitch API URL: " + sb);
 
         return new URL(sb.toString());
     }

@@ -1,9 +1,10 @@
 package com.isedol_clip_backend.util.schedule;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.isedol_clip_backend.exception.RequestException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.HotclipPeirod;
-import com.isedol_clip_backend.util.TwitchJsonModelMapper;
+import com.isedol_clip_backend.util.TwitchMapper;
 import com.isedol_clip_backend.util.TwitchStorage;
 import com.isedol_clip_backend.util.aop.CheckRunningTime;
 import com.isedol_clip_backend.web.model.TwitchClip;
@@ -12,6 +13,7 @@ import com.isedol_clip_backend.web.model.request.ReqClipsDto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.scheduling.annotation.Async;
@@ -35,6 +37,7 @@ public class CallTwitchApiSchedule {
 
     private final CallTwitchAPI callTwitchAPI;
     private final TwitchStorage twitchStorage;
+    private final TwitchMapper twitchMapper;
     private static final long[] BROADCASTER_ID
             = new long[]{195641865, 707328484, 203667951, 169700336, 237570548 ,702754423};
     private static final int FIRST = 4;
@@ -46,8 +49,8 @@ public class CallTwitchApiSchedule {
     @Scheduled(cron = "0 0 * * * *")
     public void setIsedolInfo() throws IOException, RequestException {
         HashMap<Long, TwitchUser> isedolInfo = new HashMap<>(BROADCASTER_ID.length);
-        JSONObject jsonObject = callTwitchAPI.requestUser(BROADCASTER_ID, null);
-        TwitchUser[] users = TwitchJsonModelMapper.userMapping(jsonObject);
+        JSONArray jsonArray = callTwitchAPI.requestUser(BROADCASTER_ID, null);
+        TwitchUser[] users = twitchMapper.mappingUsers(jsonArray);
         for(TwitchUser user : users) {
             isedolInfo.put(user.getId(), user);
         }
@@ -58,14 +61,14 @@ public class CallTwitchApiSchedule {
     @CheckRunningTime
     @Async
     @Scheduled(cron = "0 0 * * * *")
-    public void setHotclips() throws InterruptedException {
+    public void setHotclips() throws InterruptedException, JsonProcessingException {
         log.info("[ Scheduled ]: setNewHotclips");
         requestHotclips(HotclipPeirod.WEEK);
         requestHotclips(HotclipPeirod.MONTH);
         requestHotclips(HotclipPeirod.QUARTER);
     }
 
-    private void requestHotclips(HotclipPeirod period) throws InterruptedException {
+    private void requestHotclips(HotclipPeirod period) throws InterruptedException, JsonProcessingException {
         ArrayList<TwitchClip[]> list = new ArrayList<>(period.getValue());
         String[] cursor = new String[6];
         String startedAt = getStartedAt(period);
@@ -79,7 +82,7 @@ public class CallTwitchApiSchedule {
                 ReqClipsDto reqClipsDto = new ReqClipsDto(BROADCASTER_ID[j], cursor[j],
                         FIRST, startedAt, DateSchedule.NOW);
 
-                log.info("dto: {}", reqClipsDto);
+//                log.info("dto: {}", reqClipsDto);
 
                 try {
                     jsonObject = callTwitchAPI.requestClips(reqClipsDto);
@@ -89,11 +92,8 @@ public class CallTwitchApiSchedule {
 
                 cursor[j] = getCursor(jsonObject);
                 TwitchClip[] tempClips;
-                try {
-                    tempClips = TwitchJsonModelMapper.clipMapping(jsonObject);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
+                tempClips = twitchMapper.mappingClips(jsonObject);
+                log.info("clips: {}", Arrays.toString(tempClips));
 
                 clips.addAll(Arrays.asList(tempClips));
                 Thread.sleep(100);

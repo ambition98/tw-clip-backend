@@ -14,7 +14,7 @@ import java.util.Date;
 public class ConvertCalender {
     private static final long TIME_DIFFERENCE = 32_400_000; // UTC와 KST의 시차, 9시간
     private static final long ONE_DAY = 86_400_000;
-    private static ThreadLocal<SimpleDateFormat> rfcFormat = new ThreadLocal<SimpleDateFormat>() {
+    private static final ThreadLocal<SimpleDateFormat> rfcFormat = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -26,7 +26,7 @@ public class ConvertCalender {
         }
     };
 
-    private static ThreadLocal<SimpleDateFormat> generalFormat = new ThreadLocal<SimpleDateFormat>() {
+    private static final ThreadLocal<SimpleDateFormat> generalFormat = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat("yyyy-MM-dd");

@@ -1,8 +1,12 @@
 package com.isedol_clip_backend.web.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.RequestException;
-import com.isedol_clip_backend.util.*;
+import com.isedol_clip_backend.util.CallTwitchAPI;
+import com.isedol_clip_backend.util.MakeResp;
+import com.isedol_clip_backend.util.TwitchMapper;
+import com.isedol_clip_backend.util.TwitchStorage;
 import com.isedol_clip_backend.util.aop.CheckRunningTime;
 import com.isedol_clip_backend.web.entity.AccountEntity;
 import com.isedol_clip_backend.web.model.TwitchClip;
@@ -40,9 +44,9 @@ public class TwitchController {
     private final CallTwitchAPI callTwitchAPI;
     private final AccountService accountService;
     private final TwitchStorage twitchStorage;
-
+    private final TwitchMapper twitchMapper;
     @GetMapping("/users")
-    public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) {
+    public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) throws JsonProcessingException {
 
         if(!requestDto.isValid()) {
             return MakeResp.make(HttpStatus.BAD_REQUEST
@@ -54,9 +58,9 @@ public class TwitchController {
             return MakeResp.make(HttpStatus.OK, "Success", new TwitchUser[]{user});
         }
 
-        JSONObject jsonObject;
+        JSONArray jsonArray;
         try {
-            jsonObject = callTwitchAPI.requestUser(requestDto.getId(), requestDto.getLogin());
+            jsonArray = callTwitchAPI.requestUser(requestDto.getId(), requestDto.getLogin());
         } catch (IOException e) {
             log.error("Fail to request twitch user");
             log.warn("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
@@ -67,7 +71,9 @@ public class TwitchController {
             return MakeResp.make(e.getHttpStatus(), e.getMessage());
         }
 
-        TwitchUser[] users = TwitchJsonModelMapper.userMapping(jsonObject);
+//        TwitchUser[] users = TwitchJsonModelMapper.usersMapping(jsonObject);
+        TwitchUser[] users = twitchMapper.mappingUsers(jsonArray);
+
         log.info(Arrays.toString(users));
 
         return MakeResp.make(HttpStatus.OK, "Success", users);
@@ -75,7 +81,7 @@ public class TwitchController {
 
     @CheckRunningTime
     @GetMapping("/clips")
-    public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipsDto requestDto) {
+    public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipsDto requestDto) throws JsonProcessingException {
         log.info("RequestDto: " + requestDto);
         JSONObject jsonObject;
 
@@ -89,19 +95,11 @@ public class TwitchController {
             return MakeResp.make(e.getHttpStatus(), e.getMessage());
         }
         String cursor = getCursor(jsonObject);
-        TwitchClip[] clips;
-        try {
-            clips = TwitchJsonModelMapper.clipMapping(jsonObject);
-        } catch (ParseException e) {
-            log.error("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
-            return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        TwitchClip[] clips = twitchMapper.mappingClips(jsonObject);
 
         RespTwitchClipsDto clipsDto = new RespTwitchClipsDto();
         clipsDto.setClips(clips);
         clipsDto.setCursor(cursor);
-
-//        log.info("clipsDto: {}", clipsDto);
 
         return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
     }
@@ -109,20 +107,21 @@ public class TwitchController {
     @GetMapping("/search/user")
     public ResponseEntity<CommonResponse> searchUser(@NonNull final String keyword) throws IOException, RequestException {
         JSONObject searchRes = callTwitchAPI.searchUser(keyword);
-        JSONArray arr = searchRes.getJSONArray("data");
-        long[] id = new long[arr.length()];
-        for(int i=0; i<arr.length(); i++) {
-            id[i] = Long.parseLong(arr.getJSONObject(i).getString("id"));
+        JSONArray jsonArray = searchRes.getJSONArray("data");
+        long[] id = new long[jsonArray.length()];
+        for(int i=0; i<jsonArray.length(); i++) {
+            id[i] = Long.parseLong(jsonArray.getJSONObject(i).getString("id"));
         }
 
-        JSONObject usersObj = callTwitchAPI.requestUser(id, null);
-        TwitchUser[] users = TwitchJsonModelMapper.userMapping(usersObj);
+        jsonArray = callTwitchAPI.requestUser(id, null);
+//        TwitchUser[] users = TwitchJsonModelMapper.usersMapping(usersObj);
+        TwitchUser[] users = twitchMapper.mappingUsers(jsonArray);
 
         return MakeResp.make(HttpStatus.OK, "Success", users);
     }
     @GetMapping("/oauth")
     public ResponseEntity<CommonResponse> getTwitchToken(@NonNull final String code,
-                                                         final HttpServletResponse response) {
+                                                         final HttpServletResponse response) throws JsonProcessingException {
         log.info("OAuth code: " + code);
         JSONObject jsonObject;
         String twitchRefreshToken;
@@ -163,8 +162,9 @@ public class TwitchController {
 
         accountService.save(entity);
 
+        JSONArray jsonArray;
         try {
-            jsonObject = callTwitchAPI.requestUser(new long[]{twitchId}, null);
+            jsonArray = callTwitchAPI.requestUser(new long[]{twitchId}, null);
         } catch (IOException e) {
             log.error("Fail to request twitch user");
             log.warn("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
@@ -175,8 +175,9 @@ public class TwitchController {
             return MakeResp.make(e.getHttpStatus(), e.getMessage());
         }
 
-        TwitchUser[] twitchUser = TwitchJsonModelMapper.userMapping(jsonObject);
-        RespUser dto = new RespUser(accessToken, twitchUser[0]);
+//        TwitchUser[] twitchUser = TwitchJsonModelMapper.usersMapping(jsonObject);
+        TwitchUser user = twitchMapper.mappingUser(jsonArray);
+        RespUser dto = new RespUser(accessToken, user);
         log.info("tokenDto: {}", dto);
 
         return MakeResp.make(HttpStatus.OK, "Success", dto);

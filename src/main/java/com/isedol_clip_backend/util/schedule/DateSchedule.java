@@ -17,7 +17,6 @@ import java.util.Calendar;
 @Getter
 public class DateSchedule {
     @Getter(AccessLevel.NONE)
-//    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
     public static String NOW;
     public static String WEEK_AGO;
