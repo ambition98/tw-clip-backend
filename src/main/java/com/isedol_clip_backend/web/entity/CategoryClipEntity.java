@@ -13,6 +13,7 @@ import javax.persistence.*;
 @Table(name = "CATEGORY_CLIP")
 public class CategoryClipEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
     private long id;
 
     @ManyToOne

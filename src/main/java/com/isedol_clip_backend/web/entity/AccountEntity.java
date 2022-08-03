@@ -16,6 +16,7 @@ import javax.persistence.Table;
 @Table(name = "ACCOUNT")
 public class AccountEntity {
     @Id
+    @Column(name = "ID")
     private long id;
 
     @Column(name = "TWITCH_ACCESS_TOKEN", length = 100)
