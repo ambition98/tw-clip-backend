@@ -81,7 +81,7 @@ public class TwitchController {
 
     @CheckRunningTime
     @GetMapping("/clips")
-    public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipsDto requestDto) throws JsonProcessingException {
+    public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipsDto requestDto) throws JsonProcessingException, ParseException {
         log.info("RequestDto: " + requestDto);
         JSONObject jsonObject;
 

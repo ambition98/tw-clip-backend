@@ -61,14 +61,14 @@ public class CallTwitchApiSchedule {
     @CheckRunningTime
     @Async
     @Scheduled(cron = "0 0 * * * *")
-    public void setHotclips() throws InterruptedException, JsonProcessingException {
+    public void setHotclips() throws InterruptedException, JsonProcessingException, ParseException {
         log.info("[ Scheduled ]: setNewHotclips");
         requestHotclips(HotclipPeirod.WEEK);
         requestHotclips(HotclipPeirod.MONTH);
         requestHotclips(HotclipPeirod.QUARTER);
     }
 
-    private void requestHotclips(HotclipPeirod period) throws InterruptedException, JsonProcessingException {
+    private void requestHotclips(HotclipPeirod period) throws InterruptedException, JsonProcessingException, ParseException {
         ArrayList<TwitchClip[]> list = new ArrayList<>(period.getValue());
         String[] cursor = new String[6];
         String startedAt = getStartedAt(period);
