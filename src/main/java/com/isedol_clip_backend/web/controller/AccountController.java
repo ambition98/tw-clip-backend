@@ -1,14 +1,11 @@
 package com.isedol_clip_backend.web.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
-import com.isedol_clip_backend.exception.RequestException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.MakeResp;
-import com.isedol_clip_backend.web.entity.AccountEntity;
-import com.isedol_clip_backend.web.entity.CategoryEntity;
 import com.isedol_clip_backend.web.model.TwitchUser;
-import com.isedol_clip_backend.web.model.request.ReqCategoryDto;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
 import com.isedol_clip_backend.web.service.AccountService;
 import com.isedol_clip_backend.web.service.CategoryClipService;
@@ -18,14 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
 import java.io.IOException;
 
 @Slf4j
@@ -41,7 +35,7 @@ public class AccountController {
     private final ObjectMapper objectMapperSe;
 
     @GetMapping("")
-    public ResponseEntity<CommonResponse> getUserByToken() throws IOException, RequestException {
+    public ResponseEntity<CommonResponse> getUserByToken() throws IOException, ApiRequestException, NoExistedDataException {
 
         long id = getAccountId();
         log.info("id: {}", id);
@@ -52,39 +46,24 @@ public class AccountController {
         return MakeResp.make(HttpStatus.OK, "Success", user);
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<CommonResponse> getTwitchUser() {
-        Authentication authentication
-                = SecurityContextHolder.getContext().getAuthentication();
-
-        log.info("auth: {}", authentication);
-        log.info("principal: {}", authentication.getPrincipal());
-        log.info("authorities: {}", authentication.getAuthorities());
-        log.info("credencial: {}", authentication.getCredentials());
-        log.info("details: {}", authentication.getDetails());
-        log.info("name: {}", authentication.getName());
-
-        return null;
-    }
-
-    @PostMapping("/category")
-    public ResponseEntity<CommonResponse> postCategory(@Valid final ReqCategoryDto dto) {
-        long id = getAccountId();
-
-        try {
-            AccountEntity accountEntity = accountService.getById(id);
-            CategoryEntity categoryEntity = new CategoryEntity();
-            categoryEntity.setCategoryName(dto.getCategoryName());
-            categoryEntity.setAccount(accountEntity);
-
-            CategoryEntity resCategory = categoryService.save(id, dto.getCategoryName());
-
-        } catch (NoExistedDataException e) {
-            return MakeResp.make(HttpStatus.BAD_REQUEST, "No Content");
-        }
-
-        return MakeResp.make(HttpStatus.OK, "Success");
-    }
+//    @PostMapping("/category")
+//    public ResponseEntity<CommonResponse> postCategory(@Valid final ReqCategoryDto dto) {
+//        long id = getAccountId();
+//
+//        try {
+//            AccountEntity accountEntity = accountService.getById(id);
+//            CategoryEntity categoryEntity = new CategoryEntity();
+//            categoryEntity.setCategoryName(dto.getCategoryName());
+//            categoryEntity.setAccount(accountEntity);
+//
+//            CategoryEntity resCategory = categoryService.save(id, dto.getCategoryName());
+//
+//        } catch (NoExistedDataException e) {
+//            return MakeResp.make(HttpStatus.BAD_REQUEST, "No Content");
+//        }
+//
+//        return MakeResp.make(HttpStatus.OK, "Success");
+//    }
 
 //    @GetMapping("/categorys")
 //    public ResponseEntity<CommonResponse> getCategorys() {

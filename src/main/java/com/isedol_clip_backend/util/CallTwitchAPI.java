@@ -1,6 +1,7 @@
 package com.isedol_clip_backend.util;
 
-import com.isedol_clip_backend.exception.RequestException;
+import com.isedol_clip_backend.exception.NoExistedDataException;
+import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.web.model.request.ReqClipsDto;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -20,7 +21,7 @@ import java.text.ParseException;
 public class CallTwitchAPI {
 
     // https://dev.twitch.tv/docs/api/reference#get-users
-    public JSONArray requestUser(long[] id, String[] login) throws IOException, RequestException {
+    public JSONArray requestUser(long[] id, String[] login) throws ApiRequestException, NoExistedDataException, IOException {
         URL url = makeRequestUsersUrl(id, login);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -33,7 +34,7 @@ public class CallTwitchAPI {
         return jsonObject.getJSONArray("data");
     }
 
-    public JSONObject requestUserByToken(String token) throws IOException, RequestException {
+    public JSONObject requestUserByToken(String token) throws IOException, ApiRequestException, NoExistedDataException {
         URL url = new URL("https://api.twitch.tv/helix/users");
         log.info("Twitch URL: {}", url);
 
@@ -51,7 +52,7 @@ public class CallTwitchAPI {
 
     //https://dev.twitch.tv/docs/api/reference#get-clips
 //    @CheckRunningTime
-    public JSONObject requestClips(ReqClipsDto dto) throws IOException, RequestException, ParseException {
+    public JSONObject requestClips(ReqClipsDto dto) throws IOException, ApiRequestException, ParseException, NoExistedDataException {
         URL url = makeRequestClipsUrl(dto);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -64,7 +65,7 @@ public class CallTwitchAPI {
         return jsonObject;
     }
 
-    public JSONObject searchUser(String keyword) throws IOException, RequestException {
+    public JSONObject searchUser(String keyword) throws IOException, ApiRequestException {
         URL url = new URL("https://api.twitch.tv/helix/search/channels?first=100&query=" + keyword);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -74,7 +75,7 @@ public class CallTwitchAPI {
     }
 
     // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth#authorization-code-grant-flow
-    public JSONObject requestOauth(String code) throws IOException, RequestException {
+    public JSONObject requestOauth(String code) throws IOException, ApiRequestException {
         URL url = new URL("https://id.twitch.tv/oauth2/token");
         log.info("Twitch API URL: {}", url);
 
@@ -115,7 +116,7 @@ public class CallTwitchAPI {
     }
 
     // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#client-credentials-grant-flow
-    public boolean requestAccessToken() throws IOException, RequestException {
+    public boolean requestAccessToken() throws IOException, ApiRequestException {
         URL url = new URL("https://id.twitch.tv/oauth2/token");
 
         String parameters = "client_id=" + LoadSecret.twitchClientId +
@@ -151,14 +152,14 @@ public class CallTwitchAPI {
     // Twitch Api가 인증 관련 오류가 아니면 무조건 200을 응답한다.
     // 예를들어 존재하지 않는 id로 계정 정보를 요청해도 200을 응답한다.
     // 때문에 Http status 체크와, 빈 데이터 체크 둘 다 있어야 한다.
-    private JSONObject getResponse(HttpURLConnection conn) throws IOException, RequestException {
+    private JSONObject getResponse(HttpURLConnection conn) throws IOException, ApiRequestException {
         int status = conn.getResponseCode();
         JSONObject jsonObject;
 
         if(status != 200) {
             jsonObject = convertResponseToJson(conn.getErrorStream());
             log.error("Error reseponse: {}", jsonObject);
-            throw new RequestException(jsonObject.getString("message"), HttpStatus.resolve(status));
+            throw new ApiRequestException(jsonObject.getString("message"), HttpStatus.resolve(status));
         }
 
         jsonObject = convertResponseToJson(conn.getInputStream());
@@ -181,9 +182,9 @@ public class CallTwitchAPI {
     }
 
     // 해당 메서드는 일부 api요청에만 적용됨 (정상 응답시 "data" JsonArray로 응답을 하는 api)
-    private void checkEmptyData(JSONObject jsonObject) throws RequestException {
+    private void checkEmptyData(JSONObject jsonObject) throws NoExistedDataException {
         if(jsonObject.getJSONArray("data").length() < 1) {
-            throw new RequestException("No Content", HttpStatus.OK);
+            throw new NoExistedDataException();
         }
     }
 

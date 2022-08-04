@@ -5,11 +5,11 @@ public enum HotclipPeirod {
     MONTH(20),
     QUARTER(30);
 
-    private final int value;
+    private final int storeCnt;
 
-    HotclipPeirod(int value) {
-        this.value = value;
+    HotclipPeirod(int storeCnt) {
+        this.storeCnt = storeCnt;
     }
 
-    public int getValue() { return value; }
+    public int getStoreCnt() { return storeCnt; }
 }

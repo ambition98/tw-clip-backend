@@ -2,16 +2,16 @@ package com.isedol_clip_backend.exception;
 
 import org.springframework.http.HttpStatus;
 
-public class RequestException extends Exception {
+public class ApiRequestException extends Exception {
     private HttpStatus httpStatus;
 
-    public RequestException() {}
+    public ApiRequestException() {}
 
-    public RequestException(String message) {
+    public ApiRequestException(String message) {
         super(message);
     }
 
-    public RequestException(String message, HttpStatus httpStatus) {
+    public ApiRequestException(String message, HttpStatus httpStatus) {
         super(message);
         this.httpStatus = httpStatus;
     }

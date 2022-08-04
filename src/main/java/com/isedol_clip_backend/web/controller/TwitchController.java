@@ -1,8 +1,8 @@
 package com.isedol_clip_backend.web.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.isedol_clip_backend.auth.JwtTokenProvider;
-import com.isedol_clip_backend.exception.RequestException;
+import com.isedol_clip_backend.exception.ApiRequestException;
+import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.MakeResp;
 import com.isedol_clip_backend.util.TwitchMapper;
@@ -46,7 +46,7 @@ public class TwitchController {
     private final TwitchStorage twitchStorage;
     private final TwitchMapper twitchMapper;
     @GetMapping("/users")
-    public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) throws JsonProcessingException {
+    public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) throws IOException, NoExistedDataException, ApiRequestException {
 
         if(!requestDto.isValid()) {
             return MakeResp.make(HttpStatus.BAD_REQUEST
@@ -59,21 +59,9 @@ public class TwitchController {
         }
 
         JSONArray jsonArray;
-        try {
-            jsonArray = callTwitchAPI.requestUser(requestDto.getId(), requestDto.getLogin());
-        } catch (IOException e) {
-            log.error("Fail to request twitch user");
-            log.warn("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
-            return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
+        jsonArray = callTwitchAPI.requestUser(requestDto.getId(), requestDto.getLogin());
 
-        } catch (RequestException e) {
-            log.warn("Http status: {}, Message: {}", e.getHttpStatus(), e.getMessage());
-            return MakeResp.make(e.getHttpStatus(), e.getMessage());
-        }
-
-//        TwitchUser[] users = TwitchJsonModelMapper.usersMapping(jsonObject);
         TwitchUser[] users = twitchMapper.mappingUsers(jsonArray);
-
         log.info(Arrays.toString(users));
 
         return MakeResp.make(HttpStatus.OK, "Success", users);
@@ -81,19 +69,11 @@ public class TwitchController {
 
     @CheckRunningTime
     @GetMapping("/clips")
-    public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipsDto requestDto) throws JsonProcessingException, ParseException {
+    public ResponseEntity<CommonResponse> getTwitchClips(@NonNull final ReqClipsDto requestDto) throws IOException, ParseException, NoExistedDataException, ApiRequestException {
         log.info("RequestDto: " + requestDto);
         JSONObject jsonObject;
 
-        try {
-            jsonObject = callTwitchAPI.requestClips(requestDto);
-        } catch (IOException | ParseException e) {
-            log.error("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
-            return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (RequestException e) {
-            log.warn("Http status: {}, Message: {}", e.getHttpStatus().value(), e.getMessage());
-            return MakeResp.make(e.getHttpStatus(), e.getMessage());
-        }
+        jsonObject = callTwitchAPI.requestClips(requestDto);
         String cursor = getCursor(jsonObject);
         TwitchClip[] clips = twitchMapper.mappingClips(jsonObject);
 
@@ -105,7 +85,7 @@ public class TwitchController {
     }
 
     @GetMapping("/search/user")
-    public ResponseEntity<CommonResponse> searchUser(@NonNull final String keyword) throws IOException, RequestException {
+    public ResponseEntity<CommonResponse> searchUser(@NonNull final String keyword) throws IOException, ApiRequestException, NoExistedDataException {
         JSONObject searchRes = callTwitchAPI.searchUser(keyword);
         JSONArray jsonArray = searchRes.getJSONArray("data");
         long[] id = new long[jsonArray.length()];
@@ -114,39 +94,29 @@ public class TwitchController {
         }
 
         jsonArray = callTwitchAPI.requestUser(id, null);
-//        TwitchUser[] users = TwitchJsonModelMapper.usersMapping(usersObj);
         TwitchUser[] users = twitchMapper.mappingUsers(jsonArray);
 
         return MakeResp.make(HttpStatus.OK, "Success", users);
     }
     @GetMapping("/oauth")
     public ResponseEntity<CommonResponse> getTwitchToken(@NonNull final String code,
-                                                         final HttpServletResponse response) throws JsonProcessingException {
+                                                         final HttpServletResponse response) throws IOException, NoExistedDataException, ApiRequestException {
         log.info("OAuth code: " + code);
         JSONObject jsonObject;
         String twitchRefreshToken;
         String twitchAccessToken;
         long twitchId;
 
-        try {
-            jsonObject = callTwitchAPI.requestOauth(code);
+        jsonObject = callTwitchAPI.requestOauth(code);
 
-            twitchAccessToken = jsonObject.getString("access_token");
-            twitchRefreshToken = jsonObject.getString("refresh_token");
+        twitchAccessToken = jsonObject.getString("access_token");
+        twitchRefreshToken = jsonObject.getString("refresh_token");
 
-            jsonObject = callTwitchAPI.requestUserByToken(twitchAccessToken);
-            log.info("Twitch Response: {}", jsonObject);
+        jsonObject = callTwitchAPI.requestUserByToken(twitchAccessToken);
+        log.info("Twitch Response: {}", jsonObject);
 
-            twitchId = jsonObject.getJSONArray("data").getJSONObject(0).getLong("id");
-            log.info("Twitch Id: " + twitchId);
-
-        } catch (IOException e) {
-            log.warn("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
-            return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (RequestException e) {
-            log.warn("Http status: {}, Message: {}", e.getHttpStatus(), e.getMessage());
-            return MakeResp.make(e.getHttpStatus(), e.getMessage());
-        }
+        twitchId = jsonObject.getJSONArray("data").getJSONObject(0).getLong("id");
+        log.info("Twitch Id: " + twitchId);
 
         AccountEntity entity = new AccountEntity();
         entity.setId(twitchId);
@@ -163,19 +133,8 @@ public class TwitchController {
         accountService.save(entity);
 
         JSONArray jsonArray;
-        try {
-            jsonArray = callTwitchAPI.requestUser(new long[]{twitchId}, null);
-        } catch (IOException e) {
-            log.error("Fail to request twitch user");
-            log.warn("Http status: {}, Message: {}", HttpStatus.BAD_REQUEST, e.getMessage());
-            return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
+        jsonArray = callTwitchAPI.requestUser(new long[]{twitchId}, null);
 
-        } catch (RequestException e) {
-            log.warn("Http status: {}, Message: {}", e.getHttpStatus(), e.getMessage());
-            return MakeResp.make(e.getHttpStatus(), e.getMessage());
-        }
-
-//        TwitchUser[] twitchUser = TwitchJsonModelMapper.usersMapping(jsonObject);
         TwitchUser user = twitchMapper.mappingUser(jsonArray);
         RespUser dto = new RespUser(accessToken, user);
         log.info("tokenDto: {}", dto);
@@ -183,11 +142,11 @@ public class TwitchController {
         return MakeResp.make(HttpStatus.OK, "Success", dto);
     }
 
-    private String getCursor(JSONObject jsonObject) {
+    private String getCursor(JSONObject jsonObject) throws JSONException {
         try {
             return jsonObject.getJSONObject("pagination").getString("cursor");
         } catch (JSONException e) {
-            return null;
+            throw new JSONException("Cannot get cursor");
         }
     }
 }

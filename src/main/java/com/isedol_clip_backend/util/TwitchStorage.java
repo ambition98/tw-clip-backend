@@ -2,6 +2,7 @@ package com.isedol_clip_backend.util;
 
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
+import com.isedol_clip_backend.web.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ public class TwitchStorage {
     private ArrayList<TwitchClip[]> weekHotclips;
     private ArrayList<TwitchClip[]> monthHotclips;
     private ArrayList<TwitchClip[]> quarterHotclips;
+    private AccountRepository accountRepository;
 
     public TwitchUser getIsedolInfo(long id) {
         return isedolInfo.get(id);
@@ -32,8 +34,7 @@ public class TwitchStorage {
         this.isedolInfo = isedolInfo;
     }
 
-    public void setHotclips(HotclipPeirod period
-            , ArrayList<TwitchClip[]> clips) {
+    public void setHotclips(HotclipPeirod period , ArrayList<TwitchClip[]> clips) {
         switch (period) {
             case WEEK:
                 weekHotclips = clips;

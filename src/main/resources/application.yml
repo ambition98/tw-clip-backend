@@ -55,6 +55,7 @@ spring:
     activate:
       on-profile: dev
 
+
 logging:
   level:
     root: info

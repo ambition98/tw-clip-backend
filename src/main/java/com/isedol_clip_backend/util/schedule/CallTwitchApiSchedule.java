@@ -1,7 +1,7 @@
 package com.isedol_clip_backend.util.schedule;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.isedol_clip_backend.exception.RequestException;
+import com.isedol_clip_backend.exception.ApiRequestException;
+import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.HotclipPeirod;
 import com.isedol_clip_backend.util.TwitchMapper;
@@ -47,7 +47,7 @@ public class CallTwitchApiSchedule {
 
     @Async
     @Scheduled(cron = "0 0 * * * *")
-    public void setIsedolInfo() throws IOException, RequestException {
+    public void setIsedolInfo() throws IOException, ApiRequestException, NoExistedDataException {
         HashMap<Long, TwitchUser> isedolInfo = new HashMap<>(BROADCASTER_ID.length);
         JSONArray jsonArray = callTwitchAPI.requestUser(BROADCASTER_ID, null);
         TwitchUser[] users = twitchMapper.mappingUsers(jsonArray);
@@ -61,19 +61,19 @@ public class CallTwitchApiSchedule {
     @CheckRunningTime
     @Async
     @Scheduled(cron = "0 0 * * * *")
-    public void setHotclips() throws InterruptedException, JsonProcessingException, ParseException {
+    public void setHotclips() throws InterruptedException, IOException, ParseException, NoExistedDataException, ApiRequestException {
         log.info("[ Scheduled ]: setNewHotclips");
         requestHotclips(HotclipPeirod.WEEK);
         requestHotclips(HotclipPeirod.MONTH);
         requestHotclips(HotclipPeirod.QUARTER);
     }
 
-    private void requestHotclips(HotclipPeirod period) throws InterruptedException, JsonProcessingException, ParseException {
-        ArrayList<TwitchClip[]> list = new ArrayList<>(period.getValue());
+    private void requestHotclips(HotclipPeirod period) throws InterruptedException, IOException, ParseException, NoExistedDataException, ApiRequestException {
+        ArrayList<TwitchClip[]> list = new ArrayList<>(period.getStoreCnt());
         String[] cursor = new String[6];
         String startedAt = getStartedAt(period);
 
-        for(int i=0; i<period.getValue(); i++) {
+        for(int i = 0; i<period.getStoreCnt(); i++) {
             int idx = 0;
             ArrayList<TwitchClip> clips = new ArrayList<>();
 
@@ -84,11 +84,7 @@ public class CallTwitchApiSchedule {
 
 //                log.info("dto: {}", reqClipsDto);
 
-                try {
-                    jsonObject = callTwitchAPI.requestClips(reqClipsDto);
-                } catch (IOException | RequestException | ParseException e) {
-                    throw new RuntimeException(e);
-                }
+                jsonObject = callTwitchAPI.requestClips(reqClipsDto);
 
                 cursor[j] = getCursor(jsonObject);
                 TwitchClip[] tempClips;

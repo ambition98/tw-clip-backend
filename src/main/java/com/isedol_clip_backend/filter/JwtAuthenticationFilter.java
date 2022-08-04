@@ -24,12 +24,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         log.info("URI : {}", requestUri);
 
-//        String jwt = getJwtFromCookie(request);
         String jwt = getJwtFromHeader(request);
         request.setAttribute("jwt", jwt);
 
         if(jwt == null || jwt.isEmpty()) {
-            log.info("Has not Token");
             request.setAttribute("tokenState", TokenState.HASNOT);
 
         } else {
@@ -69,20 +67,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return null;
     }
-
-//    private String getJwtFromCookie(HttpServletRequest request) {
-//        Cookie[] cookies = request.getCookies();
-//        if(cookies != null) {
-//            for(Cookie cookie : cookies) {
-////                log.info("cookie: {} = {}", cookie.getName(), cookie.getValue());
-//                if(cookie.getName().equals("tk")) {
-//                    return cookie.getValue();
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
 }
 
 

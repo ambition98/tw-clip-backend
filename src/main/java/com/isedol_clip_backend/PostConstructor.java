@@ -1,14 +1,15 @@
 package com.isedol_clip_backend;
 
-import com.isedol_clip_backend.exception.RequestException;
+import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.schedule.CallTwitchApiSchedule;
 import com.isedol_clip_backend.util.schedule.DateSchedule;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PostConstructor {
@@ -17,11 +18,18 @@ public class PostConstructor {
     private final CallTwitchApiSchedule callTwitchApiSchedule;
 
     @PostConstruct
-    public void init() throws InterruptedException, IOException, RequestException {
+    public void init() {
         dateSchedule.setDate();
         dateSchedule.setNow();
 
-        callTwitchApiSchedule.setIsedolInfo();
-        callTwitchApiSchedule.setHotclips();
+        try {
+            callTwitchApiSchedule.setIsedolInfo();
+            callTwitchApiSchedule.setHotclips();
+        } catch (NoExistedDataException e) {
+            // Do Nothing
+        } catch (Exception e) {
+            log.error("Fail to initialization");
+            e.printStackTrace();
+        }
     }
 }

@@ -1,8 +1,10 @@
 package com.isedol_clip_backend.web.controller;
 
 import com.isedol_clip_backend.auth.JwtTokenProvider;
+import com.isedol_clip_backend.exception.ExpiredRefreshToken;
+import com.isedol_clip_backend.exception.InvalidJwtException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
-import com.isedol_clip_backend.exception.RequestException;
+import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.MakeResp;
 import com.isedol_clip_backend.util.TwitchMapper;
@@ -41,29 +43,24 @@ public class AuthController {
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<CommonResponse> refreshAccessToken(HttpServletRequest request) throws IOException, RequestException {
+    public ResponseEntity<CommonResponse> refreshAccessToken(HttpServletRequest request) throws IOException, ApiRequestException, NoExistedDataException, ExpiredRefreshToken, InvalidJwtException {
         String jwt = (String) request.getAttribute("jwt");
         Long id = JwtTokenProvider.getIdWithoutValidate(jwt);
         log.info("id: {}", id);
         if(id == null) {
-            return null;
+            throw new InvalidJwtException();
         }
 
         AccountEntity entity;
-        try {
-            entity = accountService.getById(id);
-        } catch (NoExistedDataException e) {
-            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, "Not Existed Account Id");
-        }
-
+        entity = accountService.getById(id);
         String refreshToken = entity.getRefreshToken();
 
         try {
             JwtTokenProvider.getTokenClaims(refreshToken);
         } catch (ExpiredJwtException e) {
-            return MakeResp.make(HttpStatus.BAD_REQUEST, "Expired refresh token. Need Login");
+            throw new ExpiredRefreshToken();
         } catch (Exception e) {
-            return MakeResp.make(HttpStatus.UNAUTHORIZED, "Need Login");
+            throw new InvalidJwtException(e.getMessage());
         }
 
         JSONArray jsonArray = callTwitchAPI.requestUser(new long[]{id}, null);
@@ -76,19 +73,14 @@ public class AuthController {
     }
 
     @GetMapping("/auth/logout")
-    public ResponseEntity<CommonResponse> logout() {
+    public ResponseEntity<CommonResponse> logout() throws NoExistedDataException {
         long id = getId();
 
-        try {
-            AccountEntity entity = accountService.getById(id);
-            entity.setRefreshToken(null);
-            entity.setTwitchAccessToken(null);
-            entity.setTwitchRefreshToken(null);
-
-            accountService.save(entity);
-        } catch (NoExistedDataException e) {
-            return MakeResp.make(HttpStatus.INTERNAL_SERVER_ERROR, "Not Existed Account Id");
-        }
+        AccountEntity entity = accountService.getById(id);
+        entity.setRefreshToken(null);
+        entity.setTwitchAccessToken(null);
+        entity.setTwitchRefreshToken(null);
+        accountService.save(entity);
 
         return MakeResp.make(HttpStatus.OK, "Success");
     }

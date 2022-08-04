@@ -3,7 +3,6 @@ package com.isedol_clip_backend.web.controller;
 import com.isedol_clip_backend.util.HotclipPeirod;
 import com.isedol_clip_backend.util.MakeResp;
 import com.isedol_clip_backend.util.TwitchStorage;
-import com.isedol_clip_backend.util.aop.CheckRunningTime;
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
@@ -26,7 +25,6 @@ public class StorageController {
 
     private final TwitchStorage twitchStorage;
 
-    @CheckRunningTime
     @GetMapping("/hotclips")
     public ResponseEntity<CommonResponse> getHotclips(final String period, final int page) {
         TwitchClip[] clipsDto = null;
