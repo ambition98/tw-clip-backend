@@ -3,7 +3,6 @@ package com.isedol_clip_backend.util.schedule;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,10 +22,8 @@ public class DateSchedule {
     public static String MONTH_AGO;
     public static String QUARTER_AGO;
 
-    @Async
     @Scheduled(cron = "0 0 * * * *")
     public void setDate() {
-        log.info("setDate cron");
         Calendar week = Calendar.getInstance();
         Calendar month = Calendar.getInstance();
         Calendar quarter = Calendar.getInstance();
@@ -48,7 +45,6 @@ public class DateSchedule {
         log.info("quarterAgo: {}", QUARTER_AGO);
     }
 
-    @Async
     @Scheduled(cron = "0 0 0 * * *")
     public void setNow() {
         Calendar c = Calendar.getInstance();
