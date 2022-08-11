@@ -3,10 +3,11 @@ package com.isedol_clip_backend.auth;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isedol_clip_backend.util.LoadSecret;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 public class JwtTokenProvider {
     private static final Key KEY;
 //    private static final long ACCESS_TOKEN_EXPIRY_MS = 1800000; //30분
-    private static final long ACCESS_TOKEN_EXPIRY_MS = 30000;
+    private static final long ACCESS_TOKEN_EXPIRY_MS = 10000;
     private static final long REFRESH_TOKEN_EXPIRY_MS = 259200000; //3일
     private static final String AUTHORITIES_KEY = "role";
 
@@ -64,7 +65,7 @@ public class JwtTokenProvider {
         String payload = new String(decoder.decode(st.nextToken()));
 
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> map = null;
+        Map<String, String> map;
         try {
             map = mapper.readValue(payload, Map.class);
         } catch (JsonProcessingException e) {
@@ -74,29 +75,13 @@ public class JwtTokenProvider {
         return Long.parseLong(map.get("jti"));
     }
 
-    public static Claims getTokenClaims(String token) throws Exception {
+    public static Claims getTokenClaims(String token) {
 //        try {
             return Jwts.parserBuilder()
                     .setSigningKey(KEY)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-
-//        } catch (SecurityException e) {
-//            log.info("Invalid JWT signature.");
-//        } catch (MalformedJwtException e) {
-//            log.info("Invalid JWT token.");
-//        } catch (ExpiredJwtException e) {
-//            log.info("Expired JWT token.");
-//        } catch (UnsupportedJwtException e) {
-//            log.info("Unsupported JWT token.");
-//        } catch (IllegalArgumentException e) {
-//            log.info("JWT token compact of handler are invalid.");
-//        } catch (io.jsonwebtoken.security.SignatureException e) {
-//            log.info("Invalid JWT token signature");
-//        }
-//
-//        return null;
     }
 
     public static boolean isValidToken(String token) {
@@ -118,6 +103,6 @@ public class JwtTokenProvider {
 
         User principal = new User(claims.getId(), "", authorities);
 
-        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+        return new UserAuthentication(principal, token, authorities);
     }
 }

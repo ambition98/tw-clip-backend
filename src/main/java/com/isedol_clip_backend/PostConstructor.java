@@ -23,6 +23,7 @@ public class PostConstructor {
         dateSchedule.setNow();
 
         try {
+            callTwitchApiSchedule.assignTwitchAccessToken();
             callTwitchApiSchedule.setIsedolInfo();
             callTwitchApiSchedule.setHotclips();
         } catch (NoExistedDataException e) {
@@ -31,5 +32,6 @@ public class PostConstructor {
             log.error("Fail to initialization");
             e.printStackTrace();
         }
+
     }
 }

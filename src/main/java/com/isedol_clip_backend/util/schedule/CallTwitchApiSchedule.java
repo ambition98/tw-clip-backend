@@ -2,10 +2,7 @@ package com.isedol_clip_backend.util.schedule;
 
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
-import com.isedol_clip_backend.util.CallTwitchAPI;
-import com.isedol_clip_backend.util.HotclipPeirod;
-import com.isedol_clip_backend.util.TwitchMapper;
-import com.isedol_clip_backend.util.TwitchStorage;
+import com.isedol_clip_backend.util.*;
 import com.isedol_clip_backend.util.aop.CheckRunningTime;
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
@@ -16,12 +13,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.util.FileCopyUtils;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,13 +63,50 @@ public class CallTwitchApiSchedule {
     @Async
     @Scheduled(cron = "0 0 * * * *")
     public void setHotclips() throws InterruptedException, IOException, ParseException, NoExistedDataException, ApiRequestException {
-        log.info("[ Scheduled ]: setNewHotclips");
         requestHotclips(HotclipPeirod.WEEK);
         requestHotclips(HotclipPeirod.MONTH);
         requestHotclips(HotclipPeirod.QUARTER);
+        log.info("Hotclips is updated.");
     }
 
-    private void requestHotclips(HotclipPeirod period) throws InterruptedException, IOException, ParseException, NoExistedDataException, ApiRequestException {
+//    @Async
+    @Scheduled(cron = "* * * * * 1")
+    public void assignTwitchAccessToken() throws ApiRequestException, IOException {
+        JSONObject jsonObject = callTwitchAPI.requestAccessToken();
+        String newAccessToken = jsonObject.getString("access_token");
+        JSONObject result = new JSONObject();
+        result.put("twitch_client_id", LoadSecret.twitchClientId);
+        result.put("twitch_secret", LoadSecret.twitchSecret);
+        result.put("twitch_access_token", newAccessToken);
+        result.put("jwt_secret", LoadSecret.jwtSecret);
+        byte[] bytes = result.toString().getBytes(StandardCharsets.UTF_8);
+
+        ClassPathResource resource = new ClassPathResource("secret/secret.json");
+        URI uri = resource.getURI();
+        File file = new File(uri);
+
+        printFile(file);
+
+        FileOutputStream output = new FileOutputStream(file);
+        output.write(bytes);
+        output.flush();
+        output.close();
+
+        printFile(file);
+    }
+
+    private void printFile(File file) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        FileInputStream input = new FileInputStream(file);
+        int i;
+        while((i = input.read()) != -1) {
+            sb.append((char) i);
+        }
+        log.info("secret: {}", sb);
+        input.close();
+    }
+
+    private void requestHotclips(HotclipPeirod period) throws InterruptedException, IOException, ParseException, ApiRequestException {
         ArrayList<TwitchClip[]> list = new ArrayList<>(period.getStoreCnt());
         String[] cursor = new String[6];
         String startedAt = getStartedAt(period);
@@ -84,7 +122,13 @@ public class CallTwitchApiSchedule {
 
 //                log.info("dto: {}", reqClipsDto);
 
-                jsonObject = callTwitchAPI.requestClips(reqClipsDto);
+                try {
+                    jsonObject = callTwitchAPI.requestClips(reqClipsDto);
+                } catch (NoExistedDataException e) {
+                    log.warn("Throwed NoExistedDataException during request hotclips");
+                    log.warn("Faild dto: {}", reqClipsDto);
+                    continue;
+                }
 
                 cursor[j] = getCursor(jsonObject);
                 TwitchClip[] tempClips;
@@ -134,5 +178,24 @@ public class CallTwitchApiSchedule {
 
     private Comparator<TwitchClip> getComparator() {
         return (o1, o2) -> o2.getViewCount() - o1.getViewCount();
+    }
+
+    private JSONObject loadSecretFile() {
+        ClassPathResource resource = new ClassPathResource("secret/secret.json");
+        if(!resource.exists()) {
+            log.warn("secret.json file does not exist!!!");
+        }
+        String data;
+        try {
+            byte[] byteData = FileCopyUtils.copyToByteArray(resource.getInputStream());
+            data = new String(byteData);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        JSONObject jsonObject;
+        jsonObject = new JSONObject(data);
+
+        return jsonObject;
     }
 }

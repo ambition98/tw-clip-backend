@@ -1,5 +1,6 @@
 package com.isedol_clip_backend.util.aop;
 
+import com.isedol_clip_backend.exception.AlreadyExistedDataException;
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.InvalidJwtException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
@@ -21,19 +22,30 @@ public class GlobalExceptionHandler {
         return MakeResp.make(HttpStatus.NO_CONTENT, "No Existed Data");
     }
 
+    @ExceptionHandler(AlreadyExistedDataException.class)
+    public ResponseEntity<CommonResponse> alreadyExistedDataHandler(AlreadyExistedDataException e) {
+        return MakeResp.make(HttpStatus.CONFLICT, e.getMessage());
+    }
+
     @ExceptionHandler(ApiRequestException.class)
     public ResponseEntity<CommonResponse> apiRequestExceptionHandler(ApiRequestException e) {
         return MakeResp.make(e.getHttpStatus(), e.getMessage());
     }
 
     @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<CommonResponse> expiredJwtExceptionHandler() {
-        return MakeResp.make(HttpStatus.UNAUTHORIZED, "Need Refresh Access Token. /api/refresh");
+    public ResponseEntity<CommonResponse> expiredRefreshTokenHandler() {
+        log.info("expiredAccessTokenHandler()");
+        return MakeResp.make(HttpStatus.BAD_REQUEST, "Expired Refresh Token. Need relogin");
     }
 
     @ExceptionHandler(InvalidJwtException.class)
     public ResponseEntity<CommonResponse> InvalidJwtException(InvalidJwtException e) {
-        return MakeResp.make(HttpStatus.UNAUTHORIZED, e.getMessage());
+        return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<CommonResponse> invalidRequestParams(NullPointerException e) {
+        return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

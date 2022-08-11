@@ -1,26 +1,31 @@
 package com.isedol_clip_backend.web.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.isedol_clip_backend.exception.AlreadyExistedDataException;
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.MakeResp;
+import com.isedol_clip_backend.util.TwitchMapper;
+import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
 import com.isedol_clip_backend.web.service.AccountService;
 import com.isedol_clip_backend.web.service.CategoryClipService;
 import com.isedol_clip_backend.web.service.CategoryService;
+import com.isedol_clip_backend.web.service.FavoriteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -33,6 +38,8 @@ public class AccountController {
     private final CategoryClipService categoryClipService;
     private final CallTwitchAPI callTwitchApi;
     private final ObjectMapper objectMapperSe;
+    private final FavoriteService favoriteService;
+    private final TwitchMapper twitchMapper;
 
     @GetMapping("")
     public ResponseEntity<CommonResponse> getUserByToken() throws IOException, ApiRequestException, NoExistedDataException {
@@ -44,6 +51,42 @@ public class AccountController {
         TwitchUser user = objectMapperSe.readValue(jsonString, TwitchUser.class);
 
         return MakeResp.make(HttpStatus.OK, "Success", user);
+    }
+
+    @GetMapping("/favorites")
+    public ResponseEntity<CommonResponse> getFavorites(final String cursor) throws NoExistedDataException, ApiRequestException, IOException, ParseException {
+        List<String> idList =  favoriteService.getFavoritesByAccountId(getAccountId());
+        String[] idArr = idList.toArray(idList.toArray(new String[0]));
+
+        JSONObject jsonObject = callTwitchApi.requestClipsById(idArr);
+        TwitchClip[] clips = twitchMapper.mappingClips(jsonObject);
+
+        return MakeResp.make(HttpStatus.OK, "Success", clips);
+    }
+
+    @PostMapping("/favorite")
+    public ResponseEntity<CommonResponse> postFavorite(@RequestBody final String body) throws NoExistedDataException,
+            AlreadyExistedDataException {
+        JSONObject jsonObject = new JSONObject(body);
+        String clipId = jsonObject.getString("clipId");
+        log.info("clipId: {}", clipId);
+        favoriteService.save(getAccountId(), clipId);
+        return MakeResp.make(HttpStatus.OK, "Success");
+    }
+
+    @DeleteMapping("/favorite/{clipId}")
+    public ResponseEntity<CommonResponse> deleteFavorite(@PathVariable final String clipId) throws NoExistedDataException {
+        favoriteService.delete(getAccountId(), clipId);
+        return MakeResp.make(HttpStatus.OK, "Success");
+    }
+
+    @GetMapping("/favorite/exists")
+    public ResponseEntity<CommonResponse> isExistedFavorite(final String clipId)
+            throws NoExistedDataException {
+        log.info("clipId: {}", clipId);
+        boolean exists = favoriteService.exists(getAccountId(), clipId);
+
+        return MakeResp.make(HttpStatus.OK, "Success", exists);
     }
 
 //    @PostMapping("/category")

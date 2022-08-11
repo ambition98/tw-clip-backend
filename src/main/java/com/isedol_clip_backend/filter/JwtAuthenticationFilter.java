@@ -9,6 +9,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -24,7 +25,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         log.info("URI : {}", requestUri);
 
-        String jwt = getJwtFromHeader(request);
+        String jwt = getJwtFromCookie(request);
+        log.info("jwt: {}", jwt);
         request.setAttribute("jwt", jwt);
 
         if(jwt == null || jwt.isEmpty()) {
@@ -44,7 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
-
             try {
                 SecurityContextHolder.getContext().setAuthentication(JwtTokenProvider.getAuthentication(jwt));
             } catch (Exception e) {
@@ -63,6 +64,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring("Bearer ".length());
+        }
+
+        return null;
+    }
+
+    private String getJwtFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null) {
+            for(Cookie cookie : cookies) {
+                log.info("cookie: {} = {}", cookie.getName(), cookie.getValue());
+                if(cookie.getName().equals("tk")) {
+//                    log.info("tk={}", cookie.getValue());
+                    return cookie.getValue();
+                }
+            }
         }
 
         return null;

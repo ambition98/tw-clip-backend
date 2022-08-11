@@ -18,11 +18,12 @@ public class LoadSecret {
 
     static {
         ClassPathResource resource = new ClassPathResource("secret/secret.json");
+
         if(!resource.exists()) {
             log.warn("secret.json file does not exist!!!");
         }
 
-        String data = "";
+        String data;
         try {
             byte[] byteData = FileCopyUtils.copyToByteArray(resource.getInputStream());
             data = new String(byteData);
@@ -38,10 +39,5 @@ public class LoadSecret {
         twitchSecret = jsonObject.getString("twitch_secret");
         twitchAccessToken = jsonObject.getString("twitch_access_token");
         jwtSecret = jsonObject.getString("jwt_secret");
-
-//        log.info("twitch_cliend_id: {}", twitchClientId);
-//        log.info("twitch_secret: {}", twitchSecret);
-//        log.info("twitch_access_token: {}", twitchAccessToken);
-//        log.info("jwt_secret: {}", jwtSecret);
     }
 }

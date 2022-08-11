@@ -1,7 +1,7 @@
 package com.isedol_clip_backend.config;
 
 import com.isedol_clip_backend.auth.JwtAuthenticationEntryPoint;
-import com.isedol_clip_backend.filter.AccessControllFilter;
+import com.isedol_clip_backend.filter.AccessControlFilter;
 import com.isedol_clip_backend.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 
 @Slf4j
-@EnableWebSecurity(debug = false)
+@EnableWebSecurity
 @Component
 @RequiredArgsConstructor
 public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -43,7 +43,7 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
                 .frameOptions().sameOrigin()
                 .and()
 //                .addFilterBefore(new AccessControllFilter(), AccessControllFilter.class)
-                .addFilterBefore(new AccessControllFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new AccessControlFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
     }

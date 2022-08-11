@@ -14,7 +14,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
 @Slf4j
@@ -28,7 +27,7 @@ public class StorageController {
     @GetMapping("/hotclips")
     public ResponseEntity<CommonResponse> getHotclips(final String period, final int page) {
         TwitchClip[] clipsDto = null;
-        log.info("period: {}, page: {}", period, page);
+//        log.info("period: {}, page: {}", period, page);
         switch (period) {
             case "week":
                 clipsDto = twitchStorage.getHotclips(HotclipPeirod.WEEK, page);
@@ -40,7 +39,7 @@ public class StorageController {
                 clipsDto = twitchStorage.getHotclips(HotclipPeirod.QUARTER, page);
         }
 
-        log.info("dto: {}", Arrays.toString(clipsDto));
+//        log.info("dto: {}", Arrays.toString(clipsDto));
         return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
     }
 

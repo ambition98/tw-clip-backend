@@ -1,12 +1,10 @@
 package com.isedol_clip_backend.web.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
-import com.isedol_clip_backend.util.CallTwitchAPI;
-import com.isedol_clip_backend.util.MakeResp;
-import com.isedol_clip_backend.util.TwitchMapper;
-import com.isedol_clip_backend.util.TwitchStorage;
+import com.isedol_clip_backend.util.*;
 import com.isedol_clip_backend.util.aop.CheckRunningTime;
 import com.isedol_clip_backend.web.entity.AccountEntity;
 import com.isedol_clip_backend.web.model.TwitchClip;
@@ -15,7 +13,6 @@ import com.isedol_clip_backend.web.model.request.ReqClipsDto;
 import com.isedol_clip_backend.web.model.request.ReqTwitchUsersDto;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
 import com.isedol_clip_backend.web.model.response.RespTwitchClipsDto;
-import com.isedol_clip_backend.web.model.response.RespUser;
 import com.isedol_clip_backend.web.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +42,7 @@ public class TwitchController {
     private final AccountService accountService;
     private final TwitchStorage twitchStorage;
     private final TwitchMapper twitchMapper;
+    private final ObjectMapper objectMapperSe;
     @GetMapping("/users")
     public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) throws IOException, NoExistedDataException, ApiRequestException {
 
@@ -85,7 +83,9 @@ public class TwitchController {
     }
 
     @GetMapping("/search/user")
-    public ResponseEntity<CommonResponse> searchUser(@NonNull final String keyword) throws IOException, ApiRequestException, NoExistedDataException {
+    public ResponseEntity<CommonResponse> searchUser(@NonNull final String keyword)
+            throws IOException, ApiRequestException, NoExistedDataException {
+
         JSONObject searchRes = callTwitchAPI.searchUser(keyword);
         JSONArray jsonArray = searchRes.getJSONArray("data");
         long[] id = new long[jsonArray.length()];
@@ -100,7 +100,9 @@ public class TwitchController {
     }
     @GetMapping("/oauth")
     public ResponseEntity<CommonResponse> getTwitchToken(@NonNull final String code,
-                                                         final HttpServletResponse response) throws IOException, NoExistedDataException, ApiRequestException {
+                                                         final HttpServletResponse response)
+            throws IOException, NoExistedDataException, ApiRequestException {
+
         log.info("OAuth code: " + code);
         JSONObject jsonObject;
         String twitchRefreshToken;
@@ -115,11 +117,10 @@ public class TwitchController {
         jsonObject = callTwitchAPI.requestUserByToken(twitchAccessToken);
         log.info("Twitch Response: {}", jsonObject);
 
-        twitchId = jsonObject.getJSONArray("data").getJSONObject(0).getLong("id");
-        log.info("Twitch Id: " + twitchId);
+        TwitchUser twitchUser = twitchMapper.mappingUser(jsonObject.getJSONArray("data"));
 
         AccountEntity entity = new AccountEntity();
-        entity.setId(twitchId);
+        entity.setId(twitchUser.getId());
         entity.setTwitchAccessToken(twitchAccessToken);
         entity.setTwitchRefreshToken(twitchRefreshToken);
 
@@ -131,15 +132,9 @@ public class TwitchController {
         log.info("Refresh token: {}", refreshToken);
 
         accountService.save(entity);
+        CookieUtil.setCookie(response, accessToken);
 
-        JSONArray jsonArray;
-        jsonArray = callTwitchAPI.requestUser(new long[]{twitchId}, null);
-
-        TwitchUser user = twitchMapper.mappingUser(jsonArray);
-        RespUser dto = new RespUser(accessToken, user);
-        log.info("tokenDto: {}", dto);
-
-        return MakeResp.make(HttpStatus.OK, "Success", dto);
+        return MakeResp.make(HttpStatus.OK, "Success", twitchUser);
     }
 
     private String getCursor(JSONObject jsonObject) throws JSONException {

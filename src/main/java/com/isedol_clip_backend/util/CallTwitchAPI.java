@@ -65,6 +65,17 @@ public class CallTwitchAPI {
         return jsonObject;
     }
 
+    public JSONObject requestClipsById(String[] id) throws IOException, ApiRequestException {
+        URL url = makeRequestClipsByIdUrl(id);
+        log.info("Twitch API URL: {}", url);
+
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        setAuthHeader(conn);
+
+        return getResponse(conn);
+
+    }
+
     public JSONObject searchUser(String keyword) throws IOException, ApiRequestException {
         URL url = new URL("https://api.twitch.tv/helix/search/channels?first=100&query=" + keyword);
 
@@ -116,12 +127,12 @@ public class CallTwitchAPI {
     }
 
     // https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/#client-credentials-grant-flow
-    public boolean requestAccessToken() throws IOException, ApiRequestException {
+    public JSONObject requestAccessToken() throws IOException, ApiRequestException {
         URL url = new URL("https://id.twitch.tv/oauth2/token");
 
         String parameters = "client_id=" + LoadSecret.twitchClientId +
                 "&client_secret=" + LoadSecret.twitchSecret +
-                "grant_type=client_credentials";
+                "&grant_type=client_credentials";
 
         byte[] postData = parameters.getBytes(StandardCharsets.UTF_8);
 
@@ -131,7 +142,7 @@ public class CallTwitchAPI {
         JSONObject jsonObject = getResponse(conn);
         log.info("Response twitch access token: {}", jsonObject);
 
-        return true;
+        return jsonObject;
     }
 
     private void requestPostMethod(HttpURLConnection conn, byte[] postData) throws IOException {
@@ -237,6 +248,19 @@ public class CallTwitchAPI {
         sb.deleteCharAt(sb.length() - 1);
 
         return new URL("https://api.twitch.tv/helix/users?" + sb);
+    }
+
+    private URL makeRequestClipsByIdUrl(String[] id) throws MalformedURLException {
+        StringBuilder sb = new StringBuilder();
+
+        if(id != null) {
+            for(String i : id) {
+                sb.append("id=").append(i).append("&");
+            }
+        }
+        sb.deleteCharAt(sb.length() - 1);
+
+        return new URL("https://api.twitch.tv/helix/clips?" + sb);
     }
 
     private void setAuthHeader(HttpURLConnection conn) {
