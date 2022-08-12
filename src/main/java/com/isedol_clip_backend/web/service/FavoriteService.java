@@ -20,11 +20,6 @@ public class FavoriteService {
     private final FavoriteRepository favoriteRepository;
     private final AccountService accountService;
 
-//    public FavoriteEntity getFavoriteById(long id) throws NoExistedDataException {
-//        return favoriteRepository.findById(id)
-//                .orElseThrow(NoExistedDataException::new);
-//    }
-
     public List<String> getFavoritesByAccountId(long id) throws NoExistedDataException {
         AccountEntity accountEntity = accountService.getById(id);
         List<FavoriteEntity> entityList = favoriteRepository.findByAccount(accountEntity);
@@ -32,9 +27,6 @@ public class FavoriteService {
             throw new NoExistedDataException();
 
         List<String> list = new ArrayList<>();
-//        for(FavoriteEntity entity : entityList) {
-//            list.add(entity.getClipId());
-//        }
         entityList.forEach((e) -> list.add(e.getClipId()));
 
         return list;
@@ -52,7 +44,6 @@ public class FavoriteService {
         if(exists)
             throw new AlreadyExistedDataException("이미 추가된 클립 입니다.");
         favoriteRepository.save(favoriteEntity);
-//        return favoriteRepository.save(favoriteEntity);
     }
 
     public void delete(long accountId, String clipId) throws NoExistedDataException {

@@ -4,10 +4,8 @@ import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.ExpiredRefreshToken;
 import com.isedol_clip_backend.exception.InvalidJwtException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
-import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.CookieUtil;
 import com.isedol_clip_backend.util.MakeResp;
-import com.isedol_clip_backend.util.TwitchMapper;
 import com.isedol_clip_backend.web.entity.AccountEntity;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
 import com.isedol_clip_backend.web.service.AccountService;
@@ -32,11 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 public class AuthController {
 
     private final AccountService accountService;
-    private final CallTwitchAPI callTwitchAPI;
-    private final TwitchMapper twitchMapper;
     @GetMapping("/auth/verify")
-    public ResponseEntity<CommonResponse> verify(HttpServletRequest request) {
-
+    public ResponseEntity<CommonResponse> verify() {
         return MakeResp.make(HttpStatus.OK, "USER");
     }
 
@@ -59,7 +54,7 @@ public class AuthController {
         try {
             JwtTokenProvider.getTokenClaims(refreshToken);
         } catch (ExpiredJwtException e) {
-            throw new ExpiredRefreshToken();
+            throw new ExpiredRefreshToken("다시 로그인 해 주세요");
         } catch (Exception e) {
             throw new InvalidJwtException(e.getMessage());
         }

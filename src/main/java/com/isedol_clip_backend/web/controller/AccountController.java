@@ -3,14 +3,15 @@ package com.isedol_clip_backend.web.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isedol_clip_backend.exception.AlreadyExistedDataException;
 import com.isedol_clip_backend.exception.ApiRequestException;
+import com.isedol_clip_backend.exception.InvalidParameterException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.MakeResp;
 import com.isedol_clip_backend.util.TwitchMapper;
+import com.isedol_clip_backend.web.model.Category;
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
-import com.isedol_clip_backend.web.service.AccountService;
 import com.isedol_clip_backend.web.service.CategoryClipService;
 import com.isedol_clip_backend.web.service.CategoryService;
 import com.isedol_clip_backend.web.service.FavoriteService;
@@ -33,7 +34,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountController {
 
-    private final AccountService accountService;
     private final CategoryService categoryService;
     private final CategoryClipService categoryClipService;
     private final CallTwitchAPI callTwitchApi;
@@ -89,45 +89,33 @@ public class AccountController {
         return MakeResp.make(HttpStatus.OK, "Success", exists);
     }
 
-//    @PostMapping("/category")
-//    public ResponseEntity<CommonResponse> postCategory(@Valid final ReqCategoryDto dto) {
-//        long id = getAccountId();
-//
-//        try {
-//            AccountEntity accountEntity = accountService.getById(id);
-//            CategoryEntity categoryEntity = new CategoryEntity();
-//            categoryEntity.setCategoryName(dto.getCategoryName());
-//            categoryEntity.setAccount(accountEntity);
-//
-//            CategoryEntity resCategory = categoryService.save(id, dto.getCategoryName());
-//
-//        } catch (NoExistedDataException e) {
-//            return MakeResp.make(HttpStatus.BAD_REQUEST, "No Content");
-//        }
-//
-//        return MakeResp.make(HttpStatus.OK, "Success");
-//    }
+    @GetMapping("/categorys")
+    public ResponseEntity<CommonResponse> getCategorys() throws NoExistedDataException {
+        long accountId = getAccountId();
+        List<Category> categoryList = categoryService.getCategorysByAccountId(accountId);
 
-//    @GetMapping("/categorys")
-//    public ResponseEntity<CommonResponse> getCategorys() {
-//        long id = getAccountId();
-//
-//        List<CategoryEntity> categoryEntitys = null;
-//        try {
-//            categoryEntitys = categoryService.getCategorysByAccount(accountService.getById(id));
-//        } catch (NoExistedDataException e) {
-//            return MakeResp.make(HttpStatus.BAD_REQUEST, "No Content");
-//        }
-//
-//        List<RespCategoryDto> dtoList = new ArrayList<>(categoryEntitys.size());
-//        for(CategoryEntity entity : categoryEntitys) {
-//            RespCategoryDto dto = modelMapper.map(entity, RespCategoryDto.class);
-//            dtoList.add(dto);
-//        }
-//
-//        return MakeResp.make(HttpStatus.OK, "Success", dtoList);
-//    }
-//
+        return MakeResp.make(HttpStatus.OK, "Success", categoryList);
+    }
+
+    @PostMapping("/category")
+    public ResponseEntity<CommonResponse> postCategory(@RequestBody final String body)
+            throws NoExistedDataException, InvalidParameterException {
+        long accountId = getAccountId();
+        JSONObject jsonObject = new JSONObject(body);
+        String categoryName = jsonObject.getString("categoryName");
+
+        checkValidCategoryName(categoryName);
+        categoryService.save(accountId, categoryName);
+
+        return MakeResp.make(HttpStatus.OK, "Success");
+    }
+
+    private void checkValidCategoryName(String s) throws InvalidParameterException {
+        if(s.length() < 1 || s.length() > 20) {
+            throw new InvalidParameterException("카테고리 이름은 1~20 사이로 입력해야합니다.");
+        }
+    }
+
 //    @GetMapping("/category/{categoryId}/clips") //추후수정 accountId 추가
 //    public ResponseEntity<CommonResponse> getClipsByCategoryId(@PathVariable final int categoryId) {
 //        log.info("getClips");

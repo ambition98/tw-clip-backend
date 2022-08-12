@@ -24,7 +24,7 @@ public class CategoryEntity {
     @ToString.Exclude
     private AccountEntity account;
 
-    @Column(name = "CATEGORY_NAME", length = 100)
+    @Column(name = "CATEGORY_NAME", length = 20)
     private String categoryName;
 
 //    @OneToMany(mappedBy = "category")

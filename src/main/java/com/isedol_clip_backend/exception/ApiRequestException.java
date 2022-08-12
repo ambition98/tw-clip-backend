@@ -5,8 +5,6 @@ import org.springframework.http.HttpStatus;
 public class ApiRequestException extends Exception {
     private HttpStatus httpStatus;
 
-    public ApiRequestException() {}
-
     public ApiRequestException(String message) {
         super(message);
     }
