@@ -3,7 +3,7 @@ package com.isedol_clip_backend.util.schedule;
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.*;
-import com.isedol_clip_backend.util.aop.CheckRunningTime;
+import com.isedol_clip_backend.util.aop.CheckScheduled;
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
 import com.isedol_clip_backend.web.model.request.ReqClipsDto;
@@ -18,9 +18,11 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.util.FileCopyUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -47,6 +49,7 @@ public class CallTwitchApiSchedule {
     public static final int QUARTER_SIZE = 30;
 
     @Async
+    @CheckScheduled
     @Scheduled(cron = "0 0 * * * *")
     public void setIsedolInfo() throws IOException, ApiRequestException, NoExistedDataException {
         HashMap<Long, TwitchUser> isedolInfo = new HashMap<>(BROADCASTER_ID.length);
@@ -59,17 +62,16 @@ public class CallTwitchApiSchedule {
         twitchStorage.setIsedolInfo(isedolInfo);
     }
 
-    @CheckRunningTime
+    @CheckScheduled
     @Async
     @Scheduled(cron = "0 0 * * * *")
     public void setHotclips() throws InterruptedException, IOException, ParseException, NoExistedDataException, ApiRequestException {
         requestHotclips(HotclipPeirod.WEEK);
         requestHotclips(HotclipPeirod.MONTH);
         requestHotclips(HotclipPeirod.QUARTER);
-        log.info("Hotclips is updated.");
     }
 
-//    @Async
+    @CheckScheduled
     @Scheduled(cron = "* * * * * 1")
     public void assignTwitchAccessToken() throws ApiRequestException, IOException {
         JSONObject jsonObject = callTwitchAPI.requestAccessToken();
@@ -178,24 +180,5 @@ public class CallTwitchApiSchedule {
 
     private Comparator<TwitchClip> getComparator() {
         return (o1, o2) -> o2.getViewCount() - o1.getViewCount();
-    }
-
-    private JSONObject loadSecretFile() {
-        ClassPathResource resource = new ClassPathResource("secret/secret.json");
-        if(!resource.exists()) {
-            log.warn("secret.json file does not exist!!!");
-        }
-        String data;
-        try {
-            byte[] byteData = FileCopyUtils.copyToByteArray(resource.getInputStream());
-            data = new String(byteData);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        JSONObject jsonObject;
-        jsonObject = new JSONObject(data);
-
-        return jsonObject;
     }
 }
