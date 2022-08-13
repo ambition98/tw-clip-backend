@@ -3,6 +3,7 @@ package com.isedol_clip_backend.filter;
 import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.auth.TokenState;
 import io.jsonwebtoken.ExpiredJwtException;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -15,7 +16,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
+@NoArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private JwtTokenProvider jwtTokenProvider;
+
+    public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -34,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } else {
             try {
-                JwtTokenProvider.getTokenClaims(jwt);
+                jwtTokenProvider.getTokenClaims(jwt);
             } catch (ExpiredJwtException e) {
                 log.info("Expired Token");
                 request.setAttribute("tokenState", TokenState.EXPIRED);
@@ -47,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 return;
             }
             try {
-                SecurityContextHolder.getContext().setAuthentication(JwtTokenProvider.getAuthentication(jwt));
+                SecurityContextHolder.getContext().setAuthentication(jwtTokenProvider.getAuthentication(jwt));
             } catch (Exception e) {
                 log.error("인증 실패, 알 수 없는 에러");
                 e.printStackTrace();

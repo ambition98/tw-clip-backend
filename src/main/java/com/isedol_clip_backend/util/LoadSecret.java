@@ -1,43 +1,43 @@
 package com.isedol_clip_backend.util;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.FileCopyUtils;
 
 import java.io.IOException;
 
 @Slf4j
 @Component
+@Getter
 public class LoadSecret {
-    public static final String twitchClientId;
-    public static final String twitchSecret;
-    public static final String jwtSecret;
-    public static final String twitchAccessToken;
+    @Value("${secret.path}")
+    private String secretPath;
+    private String twitchClientId;
+    private String twitchSecret;
+    private String jwtSecret;
+    private String twitchAccessToken;
 
-    static {
-        ClassPathResource resource = new ClassPathResource("secret/secret.json");
+    public void load() {
+        log.info("secretPath: {}", secretPath);
 
-        if(!resource.exists()) {
-            log.warn("secret.json file does not exist!!!");
-        }
-
-        String data;
+        JSONObject jsonObject;
         try {
-            byte[] byteData = FileCopyUtils.copyToByteArray(resource.getInputStream());
-            data = new String(byteData);
+            String FileData = FileUtil.getDataFromFilePath(secretPath);
+            jsonObject = new JSONObject(FileData);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        JSONObject jsonObject;
-
-        jsonObject = new JSONObject(data);
 
         twitchClientId = jsonObject.getString("twitch_client_id");
         twitchSecret = jsonObject.getString("twitch_secret");
         twitchAccessToken = jsonObject.getString("twitch_access_token");
         jwtSecret = jsonObject.getString("jwt_secret");
+
+        log.info("twitchClientId: {}", twitchClientId);
+        log.info("twitchSecret: {}", twitchSecret);
+        log.info("twitchAccessToken: {}", twitchAccessToken);
+        log.info("jwtSecret: {}", jwtSecret);
     }
 }

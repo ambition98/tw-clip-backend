@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("/api")
 public class AuthController {
 
+    private final JwtTokenProvider jwtTokenProvider;
     private final AccountService accountService;
     @GetMapping("/auth/verify")
     public ResponseEntity<CommonResponse> verify() {
@@ -52,14 +53,14 @@ public class AuthController {
         String refreshToken = entity.getRefreshToken();
 
         try {
-            JwtTokenProvider.getTokenClaims(refreshToken);
+            jwtTokenProvider.getTokenClaims(refreshToken);
         } catch (ExpiredJwtException e) {
             throw new ExpiredRefreshToken("다시 로그인 해 주세요");
         } catch (Exception e) {
             throw new InvalidJwtException(e.getMessage());
         }
 
-        String accessToken = JwtTokenProvider.generateUserToken(id);
+        String accessToken = jwtTokenProvider.generateUserToken(id);
         CookieUtil.setCookie(response, accessToken);
 
         return MakeResp.make(HttpStatus.OK, "Success");

@@ -22,36 +22,37 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class JwtTokenProvider {
-    private static final Key KEY;
+    private final Key key;
 //    private static final long ACCESS_TOKEN_EXPIRY_MS = 1800000; //30분
     private static final long ACCESS_TOKEN_EXPIRY_MS = 10000;
     private static final long REFRESH_TOKEN_EXPIRY_MS = 259200000; //3일
     private static final String AUTHORITIES_KEY = "role";
 
-    static {
-        KEY = Keys.hmacShaKeyFor(LoadSecret.jwtSecret.getBytes(StandardCharsets.UTF_8));
+
+    public JwtTokenProvider(LoadSecret loadSecret) {
+        key = Keys.hmacShaKeyFor(loadSecret.getJwtSecret().getBytes(StandardCharsets.UTF_8));
     }
 
-    public static String generateUserToken(long id) {
+    public String generateUserToken(long id) {
         return generateToken(id, "Access Token", UserRole.USER, ACCESS_TOKEN_EXPIRY_MS);
     }
 
-    public static String generateAdminToken(long id) {
+    public String generateAdminToken(long id) {
         return generateToken(id, "Access Token", UserRole.ADMIN, ACCESS_TOKEN_EXPIRY_MS);
     }
 
-    public static String generateRefreshToken(long id) {
+    public String generateRefreshToken(long id) {
         return generateToken(id, "Refresh Token", UserRole.USER, REFRESH_TOKEN_EXPIRY_MS);
     }
 
-    private static String generateToken(long id, String subject, UserRole role, long expiryMs) {
+    private String generateToken(long id, String subject, UserRole role, long expiryMs) {
         Date currentTime = new Date();
 
         return Jwts.builder()
                 .setSubject(subject)
                 .setId(String.valueOf(id))
                 .setIssuedAt(new Date())
-                .signWith(KEY, SignatureAlgorithm.HS256)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .setExpiration(new Date(currentTime.getTime() + expiryMs))
                 .claim("role", role)
                 .compact();
@@ -75,16 +76,16 @@ public class JwtTokenProvider {
         return Long.parseLong(map.get("jti"));
     }
 
-    public static Claims getTokenClaims(String token) {
+    public Claims getTokenClaims(String token) {
 //        try {
             return Jwts.parserBuilder()
-                    .setSigningKey(KEY)
+                    .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
     }
 
-    public static boolean isValidToken(String token) {
+    public boolean isValidToken(String token) {
         try {
             getTokenClaims(token);
         } catch (Exception e) {
@@ -94,7 +95,7 @@ public class JwtTokenProvider {
         return true;
     }
 
-    public static Authentication getAuthentication(String token) throws Exception {
+    public Authentication getAuthentication(String token) throws Exception {
         Claims claims = getTokenClaims(token);
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(new String[]{claims.get(AUTHORITIES_KEY).toString()})

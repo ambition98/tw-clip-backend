@@ -13,17 +13,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -37,7 +33,9 @@ import java.util.HashMap;
 @Getter
 @RequiredArgsConstructor
 public class CallTwitchApiSchedule {
-
+    @Value("${secret.path}")
+    private String secretPath;
+    private final LoadSecret loadSecret;
     private final CallTwitchAPI callTwitchAPI;
     private final TwitchStorage twitchStorage;
     private final TwitchMapper twitchMapper;
@@ -77,36 +75,16 @@ public class CallTwitchApiSchedule {
         JSONObject jsonObject = callTwitchAPI.requestAccessToken();
         String newAccessToken = jsonObject.getString("access_token");
         JSONObject result = new JSONObject();
-        result.put("twitch_client_id", LoadSecret.twitchClientId);
-        result.put("twitch_secret", LoadSecret.twitchSecret);
+        result.put("twitch_client_id", loadSecret.getTwitchClientId());
+        result.put("twitch_secret", loadSecret.getTwitchSecret());
         result.put("twitch_access_token", newAccessToken);
-        result.put("jwt_secret", LoadSecret.jwtSecret);
-        byte[] bytes = result.toString().getBytes(StandardCharsets.UTF_8);
+        result.put("jwt_secret", loadSecret.getJwtSecret());
+        byte[] data = result.toString().getBytes(StandardCharsets.UTF_8);
 
-        ClassPathResource resource = new ClassPathResource("secret/secret.json");
-        URI uri = resource.getURI();
-        File file = new File(uri);
-
-        printFile(file);
-
-        FileOutputStream output = new FileOutputStream(file);
-        output.write(bytes);
-        output.flush();
-        output.close();
-
-        printFile(file);
+        FileUtil.putDataToFilePath(secretPath, data);
+        loadSecret.load();
     }
 
-    private void printFile(File file) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        FileInputStream input = new FileInputStream(file);
-        int i;
-        while((i = input.read()) != -1) {
-            sb.append((char) i);
-        }
-        log.info("secret: {}", sb);
-        input.close();
-    }
 
     private void requestHotclips(HotclipPeirod period) throws InterruptedException, IOException, ParseException, ApiRequestException {
         ArrayList<TwitchClip[]> list = new ArrayList<>(period.getStoreCnt());
@@ -121,8 +99,6 @@ public class CallTwitchApiSchedule {
                 JSONObject jsonObject;
                 ReqClipsDto reqClipsDto = new ReqClipsDto(BROADCASTER_ID[j], cursor[j],
                         FIRST, startedAt, DateSchedule.NOW);
-
-//                log.info("dto: {}", reqClipsDto);
 
                 try {
                     jsonObject = callTwitchAPI.requestClips(reqClipsDto);

@@ -1,6 +1,7 @@
 package com.isedol_clip_backend;
 
 import com.isedol_clip_backend.exception.NoExistedDataException;
+import com.isedol_clip_backend.util.LoadSecret;
 import com.isedol_clip_backend.util.schedule.CallTwitchApiSchedule;
 import com.isedol_clip_backend.util.schedule.DateSchedule;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +17,10 @@ public class PostConstructor {
 
     private final DateSchedule dateSchedule;
     private final CallTwitchApiSchedule callTwitchApiSchedule;
-
+    private final LoadSecret loadSecret;
     @PostConstruct
     public void init() {
+        loadSecret.load();
         dateSchedule.setDate();
         dateSchedule.setNow();
 

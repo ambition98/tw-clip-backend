@@ -14,8 +14,6 @@ public class CheckRunningTimeAspect {
 
     @Around("@annotation(CheckRunningTime)")
     public Object check(final ProceedingJoinPoint pjp) throws Throwable {
-//        StopWatch stopWatch = new StopWatch();
-//        log.info((String) pjp.getTarget());
         MethodSignature signature = (MethodSignature) pjp.getSignature();
         String packageName = signature.getDeclaringTypeName();
         String methodName = signature.getName();

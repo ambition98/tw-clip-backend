@@ -3,6 +3,7 @@ package com.isedol_clip_backend.util;
 import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.web.model.request.ReqClipsDto;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,7 +19,9 @@ import java.text.ParseException;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class CallTwitchAPI {
+    private final LoadSecret loadSecret;
 
     // https://dev.twitch.tv/docs/api/reference#get-users
     public JSONArray requestUser(long[] id, String[] login) throws ApiRequestException, NoExistedDataException, IOException {
@@ -40,7 +43,7 @@ public class CallTwitchAPI {
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestProperty("Authorization", "Bearer " + token);
-        conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
+        conn.setRequestProperty("Client-Id", loadSecret.getTwitchClientId());
 
         JSONObject jsonObject = getResponse(conn);
         checkEmptyData(jsonObject);
@@ -56,8 +59,8 @@ public class CallTwitchAPI {
         URL url = makeRequestClipsUrl(dto);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
-        conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
+        conn.setRequestProperty("Authorization", "Bearer " + loadSecret.getTwitchAccessToken());
+        conn.setRequestProperty("Client-Id", loadSecret.getTwitchClientId());
 
         JSONObject jsonObject = getResponse(conn);
         checkEmptyData(jsonObject);
@@ -90,8 +93,8 @@ public class CallTwitchAPI {
         URL url = new URL("https://id.twitch.tv/oauth2/token");
         log.info("Twitch API URL: {}", url);
 
-        String parameters = "client_id="+LoadSecret.twitchClientId +
-                "&client_secret="+LoadSecret.twitchSecret +
+        String parameters = "client_id="+ loadSecret.getTwitchClientId() +
+                "&client_secret="+ loadSecret.getTwitchSecret() +
                 "&code="+ code +
                 "&grant_type=authorization_code" +
                 "&redirect_uri=http://localhost:8080/afterlogin";
@@ -114,7 +117,7 @@ public class CallTwitchAPI {
         log.info("Twitch API URL: {}", url);
 
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
+        conn.setRequestProperty("Authorization", "Bearer " + loadSecret.getTwitchAccessToken());
 
         int ResponseCode = conn.getResponseCode();
         if(ResponseCode == 200) {
@@ -130,8 +133,8 @@ public class CallTwitchAPI {
     public JSONObject requestAccessToken() throws IOException, ApiRequestException {
         URL url = new URL("https://id.twitch.tv/oauth2/token");
 
-        String parameters = "client_id=" + LoadSecret.twitchClientId +
-                "&client_secret=" + LoadSecret.twitchSecret +
+        String parameters = "client_id=" + loadSecret.getTwitchClientId() +
+                "&client_secret=" + loadSecret.getTwitchSecret() +
                 "&grant_type=client_credentials";
 
         byte[] postData = parameters.getBytes(StandardCharsets.UTF_8);
@@ -264,7 +267,7 @@ public class CallTwitchAPI {
     }
 
     private void setAuthHeader(HttpURLConnection conn) {
-        conn.setRequestProperty("Authorization", "Bearer " + LoadSecret.twitchAccessToken);
-        conn.setRequestProperty("Client-Id", LoadSecret.twitchClientId);
+        conn.setRequestProperty("Authorization", "Bearer " + loadSecret.getTwitchAccessToken());
+        conn.setRequestProperty("Client-Id", loadSecret.getTwitchClientId());
     }
 }

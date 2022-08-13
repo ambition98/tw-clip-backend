@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
-
+//    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -43,16 +43,4 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
     }
-
-//    @Bean
-//    public FilterRegistrationBean<JwtAuthenticationFilter> jwtFilter() {
-//        FilterRegistrationBean<JwtAuthenticationFilter> registrationBean
-//                = new FilterRegistrationBean<>(new JwtAuthenticationFilter());
-//
-//        registrationBean.addUrlPatterns("/isedol-clip/user/**");
-//        registrationBean.setOrder(1);
-//        registrationBean.setName("JWT Filter");
-//
-//        return registrationBean;
-//    }
 }

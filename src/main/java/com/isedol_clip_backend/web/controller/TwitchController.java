@@ -1,6 +1,5 @@
 package com.isedol_clip_backend.web.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
@@ -38,11 +37,11 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class TwitchController {
 
+    private final JwtTokenProvider jwtTokenProvider;
     private final CallTwitchAPI callTwitchAPI;
     private final AccountService accountService;
     private final TwitchStorage twitchStorage;
     private final TwitchMapper twitchMapper;
-    private final ObjectMapper objectMapperSe;
     @GetMapping("/users")
     public ResponseEntity<CommonResponse> getTwitchUsers(@Valid ReqTwitchUsersDto requestDto) throws IOException, NoExistedDataException, ApiRequestException {
 
@@ -124,8 +123,8 @@ public class TwitchController {
         entity.setTwitchAccessToken(twitchAccessToken);
         entity.setTwitchRefreshToken(twitchRefreshToken);
 
-        String accessToken = JwtTokenProvider.generateUserToken(entity.getId());
-        String refreshToken = JwtTokenProvider.generateRefreshToken(entity.getId());
+        String accessToken = jwtTokenProvider.generateUserToken(entity.getId());
+        String refreshToken = jwtTokenProvider.generateRefreshToken(entity.getId());
         entity.setRefreshToken(refreshToken);
 
         log.info("Access token: {}", accessToken);
