@@ -1,5 +1,7 @@
 package com.isedol_clip_backend.auth;
 
+import com.isedol_clip_backend.util.CookieUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
@@ -20,25 +22,39 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
 
-        TokenState state = (TokenState) request.getAttribute("tokenState");
+        String jwt = CookieUtil.getCookie(request, "tk");
+        log.info("jwt: {}", jwt);
+//        TokenState state = (TokenState) request.getAttribute("tokenState");
+//        log.info("state: {}", state);
         PrintWriter out = response.getWriter();
         response.setHeader("Content-Type", "application/json");
         String responseJson = "";
 
-        switch (state) {
-            case INVALID:
-            case HASNOT:
-                response.setStatus(400);
-                log.info("Need Authorized");
-                responseJson = makeResponseJson(HttpStatus.BAD_REQUEST, "Need Login");
-//                response.sendError(400, "Need Authorized");
-                break;
-            case EXPIRED:
+        try {
+            JwtTokenProvider.getTokenClaims(jwt);
+        } catch (ExpiredJwtException e) {
                 response.setStatus(401);
                 log.info("Expired access token");
                 responseJson = makeResponseJson(HttpStatus.UNAUTHORIZED, "Exired access token");
-//                response.sendError(401, "Exired access token");
+        } catch (Exception e) {
+                response.setStatus(400);
+                log.info("Need Authorized");
+                responseJson = makeResponseJson(HttpStatus.BAD_REQUEST, "Need Login");
         }
+
+
+//        switch (state) {
+//            case INVALID:
+//            case HASNOT:
+//                response.setStatus(400);
+//                log.info("Need Authorized");
+//                responseJson = makeResponseJson(HttpStatus.BAD_REQUEST, "Need Login");
+//                break;
+//            case EXPIRED:
+//                response.setStatus(401);
+//                log.info("Expired access token");
+//                responseJson = makeResponseJson(HttpStatus.UNAUTHORIZED, "Exired access token");
+//        }
 
         out.print(responseJson);
         out.flush();

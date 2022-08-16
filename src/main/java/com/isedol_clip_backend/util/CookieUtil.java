@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Component
@@ -17,6 +18,19 @@ public class CookieUtil {
     public static void deleteCookie(HttpServletResponse response) {
         Cookie cookie = makeCookie("deleted");
         response.addCookie(cookie);
+    }
+
+    public static String getCookie(HttpServletRequest request, String key) {
+        Cookie[] cookies = request.getCookies();
+        if(cookies != null) {
+            for(Cookie cookie : cookies) {
+                if(cookie.getName().equals(key)) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        return null;
     }
 
     private static Cookie makeCookie(String value) {

@@ -1,5 +1,6 @@
 package com.isedol_clip_backend;
 
+import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.LoadSecret;
 import com.isedol_clip_backend.util.schedule.CallTwitchApiSchedule;
@@ -14,13 +15,14 @@ import javax.annotation.PostConstruct;
 @Component
 @RequiredArgsConstructor
 public class PostConstructor {
-
+    private final JwtTokenProvider jwtTokenProvider;
     private final DateSchedule dateSchedule;
     private final CallTwitchApiSchedule callTwitchApiSchedule;
     private final LoadSecret loadSecret;
     @PostConstruct
     public void init() {
         loadSecret.load();
+        jwtTokenProvider.setKey(loadSecret.getJwtSecret());
         dateSchedule.setDate();
         dateSchedule.setNow();
 

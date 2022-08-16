@@ -37,7 +37,6 @@ import java.util.Arrays;
 @RequiredArgsConstructor
 public class TwitchController {
 
-    private final JwtTokenProvider jwtTokenProvider;
     private final CallTwitchAPI callTwitchAPI;
     private final AccountService accountService;
     private final TwitchStorage twitchStorage;
@@ -123,8 +122,8 @@ public class TwitchController {
         entity.setTwitchAccessToken(twitchAccessToken);
         entity.setTwitchRefreshToken(twitchRefreshToken);
 
-        String accessToken = jwtTokenProvider.generateUserToken(entity.getId());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(entity.getId());
+        String accessToken = JwtTokenProvider.generateUserToken(entity.getId());
+        String refreshToken = JwtTokenProvider.generateRefreshToken(entity.getId());
         entity.setRefreshToken(refreshToken);
 
         log.info("Access token: {}", accessToken);

@@ -1,7 +1,6 @@
 package com.isedol_clip_backend.config;
 
 import com.isedol_clip_backend.auth.JwtAuthenticationEntryPoint;
-import com.isedol_clip_backend.filter.AccessControlFilter;
 import com.isedol_clip_backend.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +16,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
-//    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -34,12 +32,12 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .formLogin().disable()
 
-                .headers()
+//                .headers()
 //                .addHeaderWriter(new XFrameOptionsHeaderWriter(new WhiteListedAllowFromStrategy(Arrays.asList("localhost"))))
-                .frameOptions().sameOrigin()
-                .and()
+//                .frameOptions().sameOrigin();
+//                .and()
 //                .addFilterBefore(new AccessControllFilter(), AccessControllFilter.class)
-                .addFilterBefore(new AccessControlFilter(), UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(new AccessControlFilter(), UsernamePasswordAuthenticationFilter.class);
                 .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
     }

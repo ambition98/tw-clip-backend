@@ -40,9 +40,6 @@ public class ConvertCalender {
     // For request TwitchAPI
     // KST -> UTC
     public static String generalToRfc(String time, convertType type) throws ParseException {
-//        SimpleDateFormat rfcFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-//        SimpleDateFormat generalFormat = new SimpleDateFormat("yyyy-MM-dd");
-
         Date d = generalFormat.get().parse(time);
 
         if(type == convertType.ENDED_AT) {
@@ -57,9 +54,6 @@ public class ConvertCalender {
     // For response Client
     // UTC -> KST
     public static String rfcToGeneral(String time) throws ParseException {
-//        SimpleDateFormat rfcFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-//        SimpleDateFormat generalFormat = new SimpleDateFormat("yyyy-MM-dd");
-
         Date d = rfcFormat.get().parse(time);
         d.setTime(d.getTime() + TIME_DIFFERENCE);
 

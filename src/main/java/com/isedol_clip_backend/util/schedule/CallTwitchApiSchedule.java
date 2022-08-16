@@ -1,5 +1,6 @@
 package com.isedol_clip_backend.util.schedule;
 
+import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.*;
