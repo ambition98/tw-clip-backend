@@ -38,6 +38,7 @@ public class CookieUtil {
         cookie.setSecure(true);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
+        cookie.setDomain("isedol-clip.xyz");
 
         return cookie;
     }
