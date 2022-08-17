@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
     List<CategoryEntity> findByAccount(AccountEntity entity);
+    boolean existsByAccountAndCategoryName(AccountEntity entity, String name);
 }

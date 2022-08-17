@@ -9,6 +9,7 @@ import com.isedol_clip_backend.util.CallTwitchAPI;
 import com.isedol_clip_backend.util.MakeResp;
 import com.isedol_clip_backend.util.TwitchMapper;
 import com.isedol_clip_backend.web.model.Category;
+import com.isedol_clip_backend.web.model.Favorite;
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -54,8 +56,11 @@ public class AccountController {
     }
 
     @GetMapping("/favorites")
-    public ResponseEntity<CommonResponse> getFavorites(final String cursor) throws NoExistedDataException, ApiRequestException, IOException, ParseException {
-        List<String> idList =  favoriteService.getFavoritesByAccountId(getAccountId());
+    public ResponseEntity<CommonResponse> getFavorites(final int page) throws NoExistedDataException,
+            ApiRequestException, IOException, ParseException {
+
+        PageRequest pageRequest = PageRequest.of(page, 100);
+        List<String> idList =  favoriteService.getFavoritesByAccountId(getAccountId(), pageRequest);
         String[] idArr = idList.toArray(idList.toArray(new String[0]));
 
         JSONObject jsonObject = callTwitchApi.requestClipsById(idArr);
@@ -69,9 +74,9 @@ public class AccountController {
             AlreadyExistedDataException {
         JSONObject jsonObject = new JSONObject(body);
         String clipId = jsonObject.getString("clipId");
-        log.info("clipId: {}", clipId);
-        favoriteService.save(getAccountId(), clipId);
-        return MakeResp.make(HttpStatus.OK, "Success");
+        Favorite favoriteDto = favoriteService.save(getAccountId(), clipId);
+
+        return MakeResp.make(HttpStatus.OK, "Success", favoriteDto);
     }
 
     @DeleteMapping("/favorite/{clipId}")
@@ -83,7 +88,6 @@ public class AccountController {
     @GetMapping("/favorite/exists")
     public ResponseEntity<CommonResponse> isExistedFavorite(final String clipId)
             throws NoExistedDataException {
-        log.info("clipId: {}", clipId);
         boolean exists = favoriteService.exists(getAccountId(), clipId);
 
         return MakeResp.make(HttpStatus.OK, "Success", exists);
@@ -104,15 +108,28 @@ public class AccountController {
         JSONObject jsonObject = new JSONObject(body);
         String categoryName = jsonObject.getString("categoryName");
 
-        checkValidCategoryName(categoryName);
-        categoryService.save(accountId, categoryName);
+        checkValidCategoryName(accountId, categoryName);
+        Category categoryDto = categoryService.save(accountId, categoryName);
+
+        return MakeResp.make(HttpStatus.OK, "Success", categoryDto);
+    }
+
+    @DeleteMapping("/category/{categoryId}")
+    public ResponseEntity<CommonResponse> deleteCategory(@PathVariable final long categoryId) throws NoExistedDataException {
+        long accountId = getAccountId();
+        categoryService.delete(accountId, categoryId);
 
         return MakeResp.make(HttpStatus.OK, "Success");
     }
 
-    private void checkValidCategoryName(String s) throws InvalidParameterException {
-        if(s.length() < 1 || s.length() > 20) {
-            throw new InvalidParameterException("카테고리 이름은 1~20 사이로 입력해야합니다.");
+    private void checkValidCategoryName(long accountId, String categoryName) throws InvalidParameterException,
+            NoExistedDataException {
+        if(categoryName.length() < 1 || categoryName.length() > 20) {
+            throw new InvalidParameterException("1~20 글자 사이로 입력해주세요");
+        }
+
+        if(categoryService.exists(accountId, categoryName)) {
+            throw new InvalidParameterException("이미 존재하는 카테고리 이름입니다.");
         }
     }
 

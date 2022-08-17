@@ -17,6 +17,11 @@ public class CategoryClipEntity {
     private long id;
 
     @ManyToOne
+    @JoinColumn(name = "ACCOUNT_ID")
+    @ToString.Exclude
+    private AccountEntity account;
+
+    @ManyToOne
     @JoinColumn(name = "CATEGORY_ID")
     @ToString.Exclude
     private CategoryEntity category;

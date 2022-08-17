@@ -40,14 +40,30 @@ public class CategoryService {
 
     }
 
-    public CategoryEntity save(long accountId, String categoryName) throws NoExistedDataException {
+    public boolean exists(long accountId, String categoryName) throws NoExistedDataException {
+        AccountEntity accountEntity = accountService.getById(accountId);
+        return categoryRepository.existsByAccountAndCategoryName(accountEntity, categoryName);
+    }
+
+    public Category save(long accountId, String categoryName) throws NoExistedDataException {
         CategoryEntity categoryEntity = new CategoryEntity();
-        AccountEntity accountEntity = accountRepository.findById(accountId)
-                .orElseThrow(NoExistedDataException::new);
+        AccountEntity accountEntity = accountService.getById(accountId);
 
         categoryEntity.setAccount(accountEntity);
         categoryEntity.setCategoryName(categoryName);
+        categoryEntity = categoryRepository.save(categoryEntity);
+        return modelMapper.map(categoryEntity, Category.class);
+    }
 
-        return categoryRepository.save(categoryEntity);
+    public void delete(long accountId, long categoryId) throws NoExistedDataException {
+        AccountEntity accountEntity = accountService.getById(accountId);
+        CategoryEntity categoryEntity = categoryRepository.findById(categoryId)
+                .orElseThrow(NoExistedDataException::new);
+
+        if(accountEntity.getId() != categoryEntity.getAccount().getId()) {
+            throw new NoExistedDataException();
+        }
+
+        categoryRepository.delete(categoryEntity);
     }
 }

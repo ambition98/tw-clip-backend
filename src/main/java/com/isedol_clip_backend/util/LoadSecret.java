@@ -20,7 +20,7 @@ public class LoadSecret {
     private String twitchAccessToken;
 
     public void load() {
-        log.info("secretPath: {}", secretPath);
+//        log.info("secretPath: {}", secretPath);
 
         JSONObject jsonObject;
         try {
@@ -35,9 +35,9 @@ public class LoadSecret {
         twitchAccessToken = jsonObject.getString("twitch_access_token");
         jwtSecret = jsonObject.getString("jwt_secret");
 
-        log.info("twitchClientId: {}", twitchClientId);
-        log.info("twitchSecret: {}", twitchSecret);
-        log.info("twitchAccessToken: {}", twitchAccessToken);
-        log.info("jwtSecret: {}", jwtSecret);
+//        log.info("twitchClientId: {}", twitchClientId);
+//        log.info("twitchSecret: {}", twitchSecret);
+//        log.info("twitchAccessToken: {}", twitchAccessToken);
+//        log.info("jwtSecret: {}", jwtSecret);
     }
 }

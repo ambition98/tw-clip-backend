@@ -5,6 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Favorites {
+public class Favorite {
+    private int id;
     private String clipId;
 }
