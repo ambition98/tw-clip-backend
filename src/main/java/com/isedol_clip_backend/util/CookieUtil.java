@@ -2,6 +2,7 @@ package com.isedol_clip_backend.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.CookieGenerator;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -11,8 +12,15 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class CookieUtil {
     public static void setCookie(HttpServletResponse response, String token) {
-        Cookie cookie = makeCookie(token);
-        response.addCookie(cookie);
+        CookieGenerator cg = new CookieGenerator();
+        cg.setCookieName("tk");
+        cg.setCookieHttpOnly(true);
+        cg.setCookieHttpOnly(true);
+        cg.addCookie(response, "value");
+//        Cookie cookie = makeCookie(token);
+//        response.addCookie(cookie);
+//        response.setHeader("Set-Cookie", "testCookie=test; Path=/; SameSite=None; Domain=isedol-clip.xyz; Secure; " +
+//                "HttpOnly;");
     }
 
     public static void deleteCookie(HttpServletResponse response) {
@@ -35,10 +43,10 @@ public class CookieUtil {
 
     private static Cookie makeCookie(String value) {
         Cookie cookie = new Cookie("tk", value);
-        cookie.setSecure(true);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        cookie.setDomain("isedol-clip.xyz");
+//        cookie.setSecure(true);
+//        cookie.setPath("/");
+//        cookie.setHttpOnly(true);
+//        cookie.setDomain("");
 
         return cookie;
     }

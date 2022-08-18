@@ -11,6 +11,7 @@ public class MvcConfig implements WebMvcConfigurer {
                     .allowedOrigins("http://localhost:8080", "https://isedol-clip.xyz")
                     .allowedHeaders("Authorization", "Content-Type", "access-control-allow-origin")
                     .allowedMethods("GET", "POST", "PUT", "DELETE")
+                    .exposedHeaders("Set-Cookie")
                     .allowCredentials(true);
     }
 }
