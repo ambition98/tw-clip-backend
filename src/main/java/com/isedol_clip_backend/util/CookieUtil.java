@@ -15,8 +15,8 @@ public class CookieUtil {
         CookieGenerator cg = new CookieGenerator();
         cg.setCookieName("tk");
         cg.setCookieHttpOnly(true);
-        cg.setCookieHttpOnly(true);
-        cg.addCookie(response, "value");
+        cg.setCookieSecure(true);
+        cg.addCookie(response, token);
 //        Cookie cookie = makeCookie(token);
 //        response.addCookie(cookie);
 //        response.setHeader("Set-Cookie", "testCookie=test; Path=/; SameSite=None; Domain=isedol-clip.xyz; Secure; " +
@@ -24,8 +24,13 @@ public class CookieUtil {
     }
 
     public static void deleteCookie(HttpServletResponse response) {
-        Cookie cookie = makeCookie("deleted");
-        response.addCookie(cookie);
+        CookieGenerator cg = new CookieGenerator();
+        cg.setCookieName("tk");
+        cg.setCookieHttpOnly(true);
+        cg.setCookieSecure(true);
+        cg.addCookie(response, "");
+//        Cookie cookie = makeCookie("deleted");
+//        response.addCookie(cookie);
     }
 
     public static String getCookie(HttpServletRequest request, String key) {
@@ -41,13 +46,9 @@ public class CookieUtil {
         return null;
     }
 
-    private static Cookie makeCookie(String value) {
-        Cookie cookie = new Cookie("tk", value);
-//        cookie.setSecure(true);
-//        cookie.setPath("/");
-//        cookie.setHttpOnly(true);
-//        cookie.setDomain("");
-
-        return cookie;
-    }
+//    private static Cookie makeCookie(String value) {
+//
+//
+//        return cookie;
+//    }
 }
