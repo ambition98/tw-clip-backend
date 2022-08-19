@@ -9,8 +9,9 @@ public class MvcConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry corsRegistry) {
         corsRegistry.addMapping("/**")
                     .allowedOrigins("http://localhost:8080", "https://isedol-clip.xyz")
-                    .allowedHeaders("Authorization", "Content-Type", "access-control-allow-origin")
+                    .allowedHeaders("Content-Type", "Access-Control-Allow-Origin", "Origin")
                     .allowedMethods("GET", "POST", "PUT", "DELETE")
+                    .maxAge(3600)
                     .exposedHeaders("Set-Cookie")
                     .allowCredentials(true);
     }

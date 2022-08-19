@@ -2,7 +2,6 @@ package com.isedol_clip_backend.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.CookieGenerator;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -12,25 +11,25 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class CookieUtil {
     public static void setCookie(HttpServletResponse response, String token) {
-        CookieGenerator cg = new CookieGenerator();
-        cg.setCookieName("tk");
-        cg.setCookieHttpOnly(true);
-        cg.setCookieSecure(true);
-        cg.addCookie(response, token);
-//        Cookie cookie = makeCookie(token);
-//        response.addCookie(cookie);
-//        response.setHeader("Set-Cookie", "testCookie=test; Path=/; SameSite=None; Domain=isedol-clip.xyz; Secure; " +
-//                "HttpOnly;");
+//        CookieGenerator cg = new CookieGenerator();
+//        cg.setCookieName("tk");
+//        cg.setCookieHttpOnly(true);
+//        cg.setCookieSecure(true);
+//        cg.addCookie(response, token);
+
+        Cookie cookie = makeCookie(token);
+        response.addCookie(cookie);
     }
 
     public static void deleteCookie(HttpServletResponse response) {
-        CookieGenerator cg = new CookieGenerator();
-        cg.setCookieName("tk");
-        cg.setCookieHttpOnly(true);
-        cg.setCookieSecure(true);
-        cg.addCookie(response, "");
-//        Cookie cookie = makeCookie("deleted");
-//        response.addCookie(cookie);
+//        CookieGenerator cg = new CookieGenerator();
+//        cg.setCookieName("tk");
+//        cg.setCookieHttpOnly(true);
+//        cg.setCookieSecure(true);
+//        cg.addCookie(response, "");
+
+        Cookie cookie = makeCookie("");
+        response.addCookie(cookie);
     }
 
     public static String getCookie(HttpServletRequest request, String key) {
@@ -46,9 +45,12 @@ public class CookieUtil {
         return null;
     }
 
-//    private static Cookie makeCookie(String value) {
-//
-//
-//        return cookie;
-//    }
+    private static Cookie makeCookie(String value) {
+        Cookie cookie = new Cookie("tk", value);
+        cookie.setPath("/");
+        cookie.setSecure(true);
+        cookie.setHttpOnly(true);
+
+        return cookie;
+    }
 }

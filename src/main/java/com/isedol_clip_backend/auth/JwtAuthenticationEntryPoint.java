@@ -23,9 +23,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                          AuthenticationException authException) throws IOException {
 
         String jwt = CookieUtil.getCookie(request, "tk");
-        log.info("jwt: {}", jwt);
-//        TokenState state = (TokenState) request.getAttribute("tokenState");
-//        log.info("state: {}", state);
         PrintWriter out = response.getWriter();
         response.setHeader("Content-Type", "application/json");
         String responseJson = "";
@@ -41,20 +38,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 log.info("Need Authorized");
                 responseJson = makeResponseJson(HttpStatus.BAD_REQUEST, "Need Login");
         }
-
-
-//        switch (state) {
-//            case INVALID:
-//            case HASNOT:
-//                response.setStatus(400);
-//                log.info("Need Authorized");
-//                responseJson = makeResponseJson(HttpStatus.BAD_REQUEST, "Need Login");
-//                break;
-//            case EXPIRED:
-//                response.setStatus(401);
-//                log.info("Expired access token");
-//                responseJson = makeResponseJson(HttpStatus.UNAUTHORIZED, "Exired access token");
-//        }
 
         out.print(responseJson);
         out.flush();

@@ -13,8 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
-//@Component
-//@Order(1)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
@@ -29,24 +27,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.info("jwt: {}", jwt);
         request.setAttribute("jwt", jwt);
 
-        if(jwt == null || jwt.isEmpty()) {
-//            log.info("tokenState: {}", TokenState.HASNOT);
-//            request.setAttribute("tokenState", TokenState.HASNOT);
-
-        } else {
+        if(jwt != null && !jwt.isEmpty()) {
             try {
                 JwtTokenProvider.getTokenClaims(jwt);
-//            } catch (ExpiredJwtException e) {
-//                log.info("Expired Token");
-//                log.info("tokenState: {}", TokenState.EXPIRED);
-//                request.setAttribute("tokenState", TokenState.EXPIRED);
-//                filterChain.doFilter(request, response);
-//                return;
             } catch (Exception e) {
-//                log.info("Invalid Token");
-//                log.info("tokenState: {}", TokenState.INVALID);
-//                e.printStackTrace();
-//                request.setAttribute("tokenState", TokenState.INVALID);
                 filterChain.doFilter(request, response);
                 return;
             }
