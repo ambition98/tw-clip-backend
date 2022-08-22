@@ -26,6 +26,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         PrintWriter out = response.getWriter();
         response.setHeader("Content-Type", "application/json");
         String responseJson = "";
+        log.info("method: {}", request.getMethod());
 
         try {
             JwtTokenProvider.getTokenClaims(jwt);
