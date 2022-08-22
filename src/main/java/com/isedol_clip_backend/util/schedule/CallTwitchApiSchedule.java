@@ -1,6 +1,5 @@
 package com.isedol_clip_backend.util.schedule;
 
-import com.isedol_clip_backend.auth.JwtTokenProvider;
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.*;
@@ -71,7 +70,7 @@ public class CallTwitchApiSchedule {
     }
 
     @CheckScheduled
-    @Scheduled(cron = "* * * * * 1")
+    @Scheduled(cron = "0 0 0 * * 1")
     public void assignTwitchAccessToken() throws ApiRequestException, IOException {
         JSONObject jsonObject = callTwitchAPI.requestAccessToken();
         String newAccessToken = jsonObject.getString("access_token");
