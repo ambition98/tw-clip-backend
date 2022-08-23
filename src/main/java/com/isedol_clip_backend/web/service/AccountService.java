@@ -25,12 +25,4 @@ public class AccountService {
         return accountRepository.findById(id)
                 .orElseThrow(NoExistedDataException::new);
     }
-
-//    public String getAccessTokenById(long id) {
-//        return accountRepository.getAccessTokenById(id);
-//    }
-
-//    public boolean existsById(long id) {
-//        return accountRepository.existsById(id);
-//    }
 }

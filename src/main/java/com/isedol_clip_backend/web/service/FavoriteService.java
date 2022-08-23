@@ -24,7 +24,7 @@ public class FavoriteService {
     private final AccountService accountService;
     private final ModelMapper modelMapper;
 
-    public List<String> getFavoritesByAccountId(long id, Pageable pageable) throws NoExistedDataException {
+    public List<String> getByAccountId(long id, Pageable pageable) throws NoExistedDataException {
         AccountEntity accountEntity = accountService.getById(id);
         List<FavoriteEntity> entityList
                 = favoriteRepository.findByAccount(accountEntity, pageable);

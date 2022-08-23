@@ -27,7 +27,6 @@ public class StorageController {
     @GetMapping("/hotclips")
     public ResponseEntity<CommonResponse> getHotclips(final String period, final int page) {
         TwitchClip[] clipsDto = null;
-//        log.info("period: {}, page: {}", period, page);
         switch (period) {
             case "week":
                 clipsDto = twitchStorage.getHotclips(HotclipPeirod.WEEK, page);

@@ -13,15 +13,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
+//@Component
+//@Order(2)
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-
-        String requestUri = request.getRequestURI();
-        log.info("URI : {}", requestUri);
 
         String jwt = CookieUtil.getCookie(request, "tk");
         log.info("jwt: {}", jwt);

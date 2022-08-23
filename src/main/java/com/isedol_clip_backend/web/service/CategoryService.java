@@ -4,7 +4,6 @@ import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.web.entity.AccountEntity;
 import com.isedol_clip_backend.web.entity.CategoryEntity;
 import com.isedol_clip_backend.web.model.Category;
-import com.isedol_clip_backend.web.repository.AccountRepository;
 import com.isedol_clip_backend.web.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +19,15 @@ import java.util.List;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final AccountRepository accountRepository;
     private final AccountService accountService;
     private final ModelMapper modelMapper;
 
-    public List<Category> getCategorysByAccountId(long id) throws NoExistedDataException {
+    public CategoryEntity getById(long id) throws NoExistedDataException {
+        return categoryRepository.findById(id)
+                .orElseThrow(NoExistedDataException::new);
+    }
+
+    public List<Category> getByAccountId(long id) throws NoExistedDataException {
         AccountEntity accountEntity = accountService.getById(id);
         List<CategoryEntity> entityList = categoryRepository.findByAccount(accountEntity);
         if(entityList.size() < 1)

@@ -30,9 +30,10 @@ import javax.servlet.http.HttpServletResponse;
 public class AuthController {
 
     private final AccountService accountService;
-    @GetMapping("/auth/verify")
-    public ResponseEntity<CommonResponse> verify() {
-        return MakeResp.make(HttpStatus.OK, "USER");
+
+    @GetMapping("/test")
+    public ResponseEntity<CommonResponse> test() {
+        return MakeResp.make(HttpStatus.OK, "Success");
     }
 
     @GetMapping("/refresh")
@@ -47,8 +48,7 @@ public class AuthController {
             throw new InvalidJwtException();
         }
 
-        AccountEntity entity;
-        entity = accountService.getById(id);
+        AccountEntity entity = accountService.getById(id);
         String refreshToken = entity.getRefreshToken();
 
         try {
@@ -60,6 +60,7 @@ public class AuthController {
         }
 
         String accessToken = JwtTokenProvider.generateUserToken(id);
+        log.info("New Access Token: {}", accessToken);
         CookieUtil.setCookie(response, accessToken);
 
         return MakeResp.make(HttpStatus.OK, "Success");
