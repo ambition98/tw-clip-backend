@@ -9,7 +9,6 @@ import com.isedol_clip_backend.util.MakeResp;
 import com.isedol_clip_backend.web.entity.AccountEntity;
 import com.isedol_clip_backend.web.model.response.CommonResponse;
 import com.isedol_clip_backend.web.service.AccountService;
-import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -39,8 +38,8 @@ public class AuthController {
     @GetMapping("/refresh")
     public ResponseEntity<CommonResponse> refreshAccessToken(HttpServletRequest request,
                                                              HttpServletResponse response) throws NoExistedDataException, ExpiredRefreshToken, InvalidJwtException {
-        String jwt = (String) request.getAttribute("jwt");
-        if(jwt == null) {
+        String jwt = CookieUtil.getCookie(request, "tk");
+        if(jwt == null || jwt.isEmpty()) {
             throw new InvalidJwtException();
         }
         Long id = JwtTokenProvider.getIdWithoutValidate(jwt);
@@ -53,14 +52,11 @@ public class AuthController {
 
         try {
             JwtTokenProvider.getTokenClaims(refreshToken);
-        } catch (ExpiredJwtException e) {
-            throw new ExpiredRefreshToken("다시 로그인 해 주세요");
         } catch (Exception e) {
-            throw new InvalidJwtException(e.getMessage());
+            throw new ExpiredRefreshToken("다시 로그인 해 주세요");
         }
 
         String accessToken = JwtTokenProvider.generateUserToken(id);
-        log.info("New Access Token: {}", accessToken);
         CookieUtil.setCookie(response, accessToken);
 
         return MakeResp.make(HttpStatus.OK, "Success");
@@ -70,11 +66,11 @@ public class AuthController {
     public ResponseEntity<CommonResponse> logout(HttpServletResponse response) throws NoExistedDataException {
         long id = getAccountId();
         if(id != -1) {
-            AccountEntity entity = accountService.getById(id);
-            entity.setRefreshToken(null);
-            entity.setTwitchAccessToken(null);
-            entity.setTwitchRefreshToken(null);
-            accountService.save(entity);
+            AccountEntity accountEntity = accountService.getById(id);
+            accountEntity.setRefreshToken(null);
+            accountEntity.setTwitchAccessToken(null);
+            accountEntity.setTwitchRefreshToken(null);
+            accountService.save(accountEntity);
         }
 
         CookieUtil.deleteCookie(response);

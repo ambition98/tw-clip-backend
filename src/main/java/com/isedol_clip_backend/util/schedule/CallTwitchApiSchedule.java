@@ -4,6 +4,7 @@ import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.*;
 import com.isedol_clip_backend.util.aop.CheckScheduled;
+import com.isedol_clip_backend.util.myEnum.HotclipPeirod;
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
 import com.isedol_clip_backend.web.model.request.ReqClipsDto;

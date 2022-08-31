@@ -39,10 +39,16 @@ public class FavoriteController {
 
         PageRequest pageRequest = PageRequest.of(page, 100);
         List<String> idList =  favoriteService.getByAccountId(getAccountId(), pageRequest);
+
         String[] idArr = idList.toArray(idList.toArray(new String[0]));
+        log.info("DB clips length: {}", idArr.length);
 
         JSONObject jsonObject = callTwitchApi.requestClipsById(idArr);
         TwitchClip[] clips = twitchMapper.mappingClips(jsonObject);
+        for(TwitchClip clip : clips) {
+            System.out.println(clip);
+        }
+        log.info("twitch clips length: {}", clips.length);
 
         return MakeResp.make(HttpStatus.OK, "Success", clips);
     }

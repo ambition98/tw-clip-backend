@@ -31,6 +31,10 @@ public class FavoriteService {
         if(entityList.size() < 1)
             throw new NoExistedDataException();
 
+        for(FavoriteEntity entity : entityList) {
+            System.out.println(entity.toString());
+        }
+
         List<String> list = new ArrayList<>();
         entityList.forEach((e) -> list.add(e.getClipId()));
 

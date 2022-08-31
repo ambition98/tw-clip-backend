@@ -1,5 +1,6 @@
 package com.isedol_clip_backend.util;
 
+import com.isedol_clip_backend.util.myEnum.HotclipPeirod;
 import com.isedol_clip_backend.web.model.TwitchClip;
 import com.isedol_clip_backend.web.model.TwitchUser;
 import com.isedol_clip_backend.web.repository.AccountRepository;

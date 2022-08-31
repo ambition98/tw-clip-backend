@@ -14,46 +14,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice(basePackages = "com.isedol_clip_backend.web.controller")
 public class GlobalExceptionHandler {
 
-//    @ExceptionHandler(NoExistedDataException.class)
-//    public ResponseEntity<CommonResponse> noExistedDataHandler() {
-//        return MakeResp.make(HttpStatus.NO_CONTENT, "No Existed Data");
-//    }
-//
-//    @ExceptionHandler(AlreadyExistedDataException.class)
-//    public ResponseEntity<CommonResponse> alreadyExistedDataHandler(AlreadyExistedDataException e) {
-//        return MakeResp.make(HttpStatus.CONFLICT, e.getMessage());
-//    }
-//
     @ExceptionHandler(ApiRequestException.class)
     public ResponseEntity<CommonResponse> apiRequestExceptionHandler(ApiRequestException e) {
         return MakeResp.make(e.getHttpStatus(), e.getMessage());
     }
-
-//    @ExceptionHandler(ExpiredJwtException.class)
-//    public ResponseEntity<CommonResponse> expiredRefreshTokenHandler() {
-//        return MakeResp.make(HttpStatus.BAD_REQUEST, "Expired Refresh Token. Need relogin");
-//    }
-//
-//    @ExceptionHandler(InvalidJwtException.class)
-//    public ResponseEntity<CommonResponse> InvalidJwtException(InvalidJwtException e) {
-//        return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
-//    }
-//
-//    @ExceptionHandler(InvalidParameterException.class)
-//    public ResponseEntity<CommonResponse> InvalidParameterException(InvalidJwtException e) {
-//        return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
-//    }
-//
-//    @ExceptionHandler(NullPointerException.class)
-//    public ResponseEntity<CommonResponse> invalidRequestParams(NullPointerException e) {
-//        return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());
-//    }
 
     @ExceptionHandler({
             NullPointerException.class,
             InvalidParameterException.class,
             InvalidJwtException.class,
             ExpiredJwtException.class,
+            ExpiredRefreshToken.class
     })
     public ResponseEntity<CommonResponse> badRequestHandler(Exception e) {
         return MakeResp.make(HttpStatus.BAD_REQUEST, e.getMessage());

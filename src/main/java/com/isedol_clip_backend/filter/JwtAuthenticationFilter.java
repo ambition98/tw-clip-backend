@@ -24,7 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String jwt = CookieUtil.getCookie(request, "tk");
         log.info("jwt: {}", jwt);
-        request.setAttribute("jwt", jwt);
+//        request.setAttribute("jwt", jwt);
 
         if(jwt != null && !jwt.isEmpty()) {
             try {

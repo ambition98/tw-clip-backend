@@ -1,6 +1,6 @@
 package com.isedol_clip_backend.web.controller;
 
-import com.isedol_clip_backend.util.HotclipPeirod;
+import com.isedol_clip_backend.util.myEnum.HotclipPeirod;
 import com.isedol_clip_backend.util.MakeResp;
 import com.isedol_clip_backend.util.TwitchStorage;
 import com.isedol_clip_backend.web.model.TwitchClip;

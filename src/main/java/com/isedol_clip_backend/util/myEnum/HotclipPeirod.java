@@ -1,4 +1,4 @@
-package com.isedol_clip_backend.util;
+package com.isedol_clip_backend.util.myEnum;
 
 public enum HotclipPeirod {
     WEEK(10),
