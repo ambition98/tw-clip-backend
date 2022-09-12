@@ -11,7 +11,7 @@ import java.util.Date;
  * Apply time defference. (RFC3339 format is UTC, yyyy-MM-dd format is KST)
  */
 @Slf4j
-public class ConvertCalender {
+public class ConvertDateFormat {
     private static final long TIME_DIFFERENCE = 32_400_000; // UTC와 KST의 시차, 9시간
     private static final long ONE_DAY = 86_400_000;
     private static final ThreadLocal<SimpleDateFormat> rfcFormat = new ThreadLocal<SimpleDateFormat>() {
@@ -37,7 +37,9 @@ public class ConvertCalender {
             return super.get();
         }
     };
+
     // For request TwitchAPI
+    // yyyy-MM-dd -> yyyy-MM-dd'T'HH:mm:ss'Z'
     // KST -> UTC
     public static String generalToRfc(String time, convertType type) throws ParseException {
         Date d = generalFormat.get().parse(time);
@@ -52,6 +54,7 @@ public class ConvertCalender {
     }
 
     // For response Client
+    // yyyy-MM-dd'T'HH:mm:ss'Z' -> yyyy-MM-dd
     // UTC -> KST
     public static String rfcToGeneral(String time) throws ParseException {
         Date d = rfcFormat.get().parse(time);

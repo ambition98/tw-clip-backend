@@ -1,6 +1,8 @@
 package com.isedol_clip_backend.web.entity;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 
@@ -9,8 +11,7 @@ import javax.persistence.*;
 @ToString
 @Table(name = "FAVORITE")
 @Entity
-@NoArgsConstructor
-public class FavoriteEntity {
+public class FavoriteEntity extends ClipsEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private long id;
@@ -20,11 +21,10 @@ public class FavoriteEntity {
     @ToString.Exclude
     private AccountEntity account;
 
-    @Column(name = "CLIP_ID", length = 100)
-    private String clipId;
+//    @Column(name = "CLIP_ID", length = 100)
+//    private String clipId;
 
-    public FavoriteEntity(AccountEntity account, String clipId) {
-        this.account = account;
-        this.clipId = clipId;
-    }
+//    @Column(name = "REGDATE", length = 20)
+//    @CreationTimestamp
+//    private Date regdate;
 }

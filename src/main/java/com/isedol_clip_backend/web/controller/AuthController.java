@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,11 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 public class AuthController {
 
     private final AccountService accountService;
-
-    @GetMapping("/test")
-    public ResponseEntity<CommonResponse> test() {
-        return MakeResp.make(HttpStatus.OK, "Success");
-    }
 
     @GetMapping("/refresh")
     public ResponseEntity<CommonResponse> refreshAccessToken(HttpServletRequest request,
@@ -63,26 +57,17 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<CommonResponse> logout(HttpServletResponse response) throws NoExistedDataException {
-        long id = getAccountId();
-        if(id != -1) {
-            AccountEntity accountEntity = accountService.getById(id);
-            accountEntity.setRefreshToken(null);
-            accountEntity.setTwitchAccessToken(null);
-            accountEntity.setTwitchRefreshToken(null);
-            accountService.save(accountEntity);
-        }
+    public ResponseEntity<CommonResponse> logout(HttpServletRequest request, HttpServletResponse response) throws NoExistedDataException {
+        long id = JwtTokenProvider.getIdWithoutValidate(CookieUtil.getCookie(request, "tk"));
+
+        AccountEntity accountEntity = accountService.getById(id);
+        accountEntity.setRefreshToken(null);
+        accountEntity.setTwitchAccessToken(null);
+        accountEntity.setTwitchRefreshToken(null);
+        accountService.save(accountEntity);
 
         CookieUtil.deleteCookie(response);
 
         return MakeResp.make(HttpStatus.OK, "Success");
-    }
-
-    private long getAccountId() {
-        String id = SecurityContextHolder.getContext().getAuthentication().getName();
-        if(id.equals("anonymousUser")) {
-            return -1L;
-        }
-        return Long.parseLong(id);
     }
 }

@@ -8,10 +8,10 @@ import javax.persistence.*;
 
 @Getter
 @Setter
-//@ToString
+@ToString
 @Entity
 @Table(name = "CATEGORY_CLIP")
-public class CategoryClipEntity {
+public class CategoryClipEntity extends ClipsEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private long id;
@@ -26,6 +26,10 @@ public class CategoryClipEntity {
     @ToString.Exclude
     private CategoryEntity category;
 
-    @Column(name = "CLIP_ID", length = 100)
-    private String clipId;
+//    @Column(name = "CLIP_ID", length = 100)
+//    private String clipId;
+
+//    @Column(name = "REGDATE", length = 20)
+//    @CreationTimestamp
+//    private Date regdate;
 }

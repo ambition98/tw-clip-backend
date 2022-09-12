@@ -11,14 +11,11 @@ import javax.persistence.*;
 @ToString
 @Table(name = "CATEGORY")
 @Entity
-public class CategoryEntity {
+public class CategoryEntity extends GeneralEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private long id;
 
-//    @ManyToOne
-//    @JoinColumn(name = "ACCOUNT_ID")
-//    private AccountEntity accountId;
     @ManyToOne
     @JoinColumn(name = "ACCOUNT_ID")
     @ToString.Exclude
@@ -27,7 +24,7 @@ public class CategoryEntity {
     @Column(name = "CATEGORY_NAME", length = 20)
     private String categoryName;
 
-//    @OneToMany(mappedBy = "category")
-//    @ToString.Exclude
-//    private List<CategoryClipEntity> categoryClips;
+//    @Column(name = "REGDATE", length = 20)
+//    @CreationTimestamp
+//    private Date regdate;
 }

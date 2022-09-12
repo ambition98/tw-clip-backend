@@ -30,6 +30,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -71,7 +72,7 @@ public class TwitchController {
 
         jsonObject = callTwitchAPI.requestClips(requestDto);
         String cursor = getCursor(jsonObject);
-        TwitchClip[] clips = twitchMapper.mappingClips(jsonObject);
+        List<TwitchClip> clips = twitchMapper.mappingClips(jsonObject);
 
         RespTwitchClipsDto clipsDto = new RespTwitchClipsDto();
         clipsDto.setClips(clips);

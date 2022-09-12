@@ -23,10 +23,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.*;
 
 @EnableAsync
 @Component
@@ -110,10 +107,9 @@ public class CallTwitchApiSchedule {
                 }
 
                 cursor[j] = getCursor(jsonObject);
-                TwitchClip[] tempClips;
-                tempClips = twitchMapper.mappingClips(jsonObject);
+                List<TwitchClip> tempClips = twitchMapper.mappingClips(jsonObject);
 
-                clips.addAll(Arrays.asList(tempClips));
+                clips.addAll(tempClips);
                 Thread.sleep(100);
             }
 

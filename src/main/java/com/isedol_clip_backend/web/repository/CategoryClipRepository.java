@@ -8,5 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface CategoryClipRepository extends JpaRepository<CategoryClipEntity, Long> {
-    public List<CategoryClipEntity> findByAccountAndCategory(AccountEntity account, CategoryEntity category);
+    List<CategoryClipEntity> findByAccountAndCategory(AccountEntity account, CategoryEntity category);
+
 }

@@ -212,14 +212,14 @@ public class CallTwitchAPI {
 
         if(dto.getStartedAt() != null) {
             String startedAt =
-                    ConvertCalender.generalToRfc(dto.getStartedAt(),
-                            ConvertCalender.convertType.START_AT);
+                    ConvertDateFormat.generalToRfc(dto.getStartedAt(),
+                            ConvertDateFormat.convertType.START_AT);
             sb.append("started_at=").append(startedAt).append("&");
         }
 
         if(dto.getEndedAt() != null) {
-            String endedAt = ConvertCalender.generalToRfc(dto.getEndedAt(),
-                    ConvertCalender.convertType.ENDED_AT);
+            String endedAt = ConvertDateFormat.generalToRfc(dto.getEndedAt(),
+                    ConvertDateFormat.convertType.ENDED_AT);
             sb.append("ended_at=").append(endedAt).append("&");
         }
 
@@ -228,7 +228,6 @@ public class CallTwitchAPI {
         }
 
         sb.deleteCharAt(sb.length() - 1);
-//        log.info("Twitch API URL: " + sb);
 
         return new URL(sb.toString());
     }

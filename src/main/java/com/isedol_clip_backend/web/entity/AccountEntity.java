@@ -14,7 +14,7 @@ import javax.persistence.Table;
 @ToString
 @Entity
 @Table(name = "ACCOUNT")
-public class AccountEntity {
+public class AccountEntity extends GeneralEntity {
     @Id
     @Column(name = "ID")
     private long id;
@@ -27,16 +27,4 @@ public class AccountEntity {
 
     @Column(name = "REFRESH_TOKEN", length = 200)
     private String refreshToken;
-
-//    @OneToMany(mappedBy = "account")
-//    @ToString.Exclude
-//    private List<CategoryEntity> categorys;
-//
-//    public boolean addCategory(CategoryEntity entity) {
-//        int before = categorys.size();
-//        categorys.add(entity);
-//        int after = categorys.size();
-//
-//        return before != after;
-//    }
 }

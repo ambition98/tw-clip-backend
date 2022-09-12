@@ -9,10 +9,8 @@ import com.isedol_clip_backend.web.repository.FavoriteRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -24,22 +22,33 @@ public class FavoriteService {
     private final AccountService accountService;
     private final ModelMapper modelMapper;
 
-    public List<String> getByAccountId(long id, Pageable pageable) throws NoExistedDataException {
+    public List<FavoriteEntity> getAllByAccountId(long id) throws NoExistedDataException {
         AccountEntity accountEntity = accountService.getById(id);
         List<FavoriteEntity> entityList
-                = favoriteRepository.findByAccount(accountEntity, pageable);
+                = favoriteRepository.findAllByAccount(accountEntity);
+
         if(entityList.size() < 1)
             throw new NoExistedDataException();
 
-        for(FavoriteEntity entity : entityList) {
-            System.out.println(entity.toString());
-        }
-
-        List<String> list = new ArrayList<>();
-        entityList.forEach((e) -> list.add(e.getClipId()));
-
-        return list;
+        return entityList;
     }
+
+//    public List<String> getByAccountId(long id, Pageable pageable) throws NoExistedDataException {
+//        AccountEntity accountEntity = accountService.getById(id);
+//        List<FavoriteEntity> entityList
+//                = favoriteRepository.findByAccount(accountEntity, pageable);
+//        if(entityList.size() < 1)
+//            throw new NoExistedDataException();
+//
+//        for(FavoriteEntity entity : entityList) {
+//            System.out.println(entity.toString());
+//        }
+//
+//        List<String> list = new ArrayList<>();
+//        entityList.forEach((e) -> list.add(e.getClipId()));
+//
+//        return list;
+//    }
 
     public boolean exists(long accountId, String clipId) throws NoExistedDataException {
         AccountEntity accountEntity = accountService.getById(accountId);
@@ -48,7 +57,11 @@ public class FavoriteService {
 
     public Favorite save(long accountId, String clipId) throws NoExistedDataException, AlreadyExistedDataException {
         AccountEntity accountEntity = accountService.getById(accountId);
-        FavoriteEntity favoriteEntity = new FavoriteEntity(accountEntity, clipId);
+
+        FavoriteEntity favoriteEntity = new FavoriteEntity();
+        favoriteEntity.setAccount(accountEntity);
+        favoriteEntity.setClipId(clipId);
+
         boolean exists = favoriteRepository.existsByAccountAndClipId(accountEntity, clipId);
         if(exists)
             throw new AlreadyExistedDataException("이미 추가된 클립 입니다.");

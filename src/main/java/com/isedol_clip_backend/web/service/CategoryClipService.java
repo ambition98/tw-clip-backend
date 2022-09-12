@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -22,22 +21,18 @@ public class CategoryClipService {
     private final AccountService accountService;
 
 
-    public List<String> getClips(long accountId, long categoryId) throws NoExistedDataException {
+    public List<CategoryClipEntity> getClips(long accountId, long categoryId) throws NoExistedDataException {
         AccountEntity accountEntity = accountService.getById(accountId);
         CategoryEntity categoryEntity = categoryService.getById(categoryId);
 
         List<CategoryClipEntity> entityList
                 = categoryClipRepository.findByAccountAndCategory(accountEntity, categoryEntity);
+
         if(entityList.size() < 1) {
             throw new NoExistedDataException();
         }
 
-        List<String> clipIdList = new ArrayList<>(entityList.size());
-        entityList.forEach(e -> {
-            clipIdList.add(e.getClipId());
-        });
-
-        return clipIdList;
+        return entityList;
     }
 
     public void save(long accountId, long categoryId, String clipId) throws NoExistedDataException {

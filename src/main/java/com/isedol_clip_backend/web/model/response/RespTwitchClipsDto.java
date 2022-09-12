@@ -5,10 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
+
 @Getter
 @Setter
 @ToString
 public class RespTwitchClipsDto {
-    private TwitchClip[] clips;
+    private List<TwitchClip> clips;
     private String cursor;
 }

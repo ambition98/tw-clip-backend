@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Date;
+
 @Getter
 @Setter
 @ToString
@@ -21,6 +23,7 @@ public class TwitchClip {
     private String broadcasterId;
     private String videoId;
     private Integer vodOffset;
+    private Date regdate;
 
     /* Twitch Api로부터 오는 전체 필드 (당장은 필요없음) */
 //    private String gameId;

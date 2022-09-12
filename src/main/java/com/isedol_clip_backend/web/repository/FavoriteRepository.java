@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FavoriteRepository extends PagingAndSortingRepository<FavoriteEntity, Long> {
+    List<FavoriteEntity> findAllByAccount(AccountEntity account);
     List<FavoriteEntity> findByAccount(AccountEntity account, Pageable pageable);
     Optional<FavoriteEntity> findByAccountAndClipId(AccountEntity account, String clipId);
     boolean existsByAccountAndClipId(AccountEntity account, String clipId);

@@ -10,6 +10,8 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -31,13 +33,14 @@ public class TwitchMapper {
         return objectMapperSe.readValue(jsonArray.getJSONObject(0).toString(), TwitchUser.class);
     }
 
-    public TwitchClip[] mappingClips(JSONObject jsonObject) throws JsonProcessingException, ParseException {
+    public List<TwitchClip> mappingClips(JSONObject jsonObject) throws JsonProcessingException, ParseException {
         JSONArray jsonArray = jsonObject.getJSONArray("data");
-        TwitchClip[] clips = new TwitchClip[jsonArray.length()];
+        List<TwitchClip> clips = new ArrayList<>(jsonArray.length());
         for(int i=0; i<jsonArray.length(); i++) {
-            clips[i] = objectMapperSe.readValue(jsonArray.getJSONObject(i).toString(), TwitchClip.class);
-            String createdAt = clips[i].getCreatedAt();
-            clips[i].setCreatedAt(ConvertCalender.rfcToGeneral(createdAt));
+            TwitchClip temp = objectMapperSe.readValue(jsonArray.getJSONObject(i).toString(), TwitchClip.class);
+            String createdAt = temp.getCreatedAt();
+            temp.setCreatedAt(ConvertDateFormat.rfcToGeneral(createdAt));
+            clips.add(temp);
         }
 
         return clips;
