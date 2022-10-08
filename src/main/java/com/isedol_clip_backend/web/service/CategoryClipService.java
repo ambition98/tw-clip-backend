@@ -36,14 +36,27 @@ public class CategoryClipService {
     }
 
     public void save(long accountId, long categoryId, String clipId) throws NoExistedDataException {
+        CategoryClipEntity categoryClipEntity = getCategoryEntity(accountId, categoryId);
+        categoryClipEntity.setClipId(clipId);
+
+        categoryClipRepository.save(categoryClipEntity);
+    }
+
+    public int deleteAll(long accountId, long categoryId, List<String> clipsId) throws NoExistedDataException {
+        AccountEntity accountEntity = accountService.getById(accountId);
+        CategoryEntity categoryEntity = categoryService.getById(categoryId);
+
+        return categoryClipRepository.deleteAllByAccountAndCategoryAndClipIdIn(accountEntity, categoryEntity, clipsId);
+    }
+
+    private CategoryClipEntity getCategoryEntity(long accountId, long categoryId) throws NoExistedDataException {
         CategoryClipEntity categoryClipEntity = new CategoryClipEntity();
         AccountEntity accountEntity = accountService.getById(accountId);
         CategoryEntity categoryEntity = categoryService.getById(categoryId);
 
         categoryClipEntity.setAccount(accountEntity);
         categoryClipEntity.setCategory(categoryEntity);
-        categoryClipEntity.setClipId(clipId);
 
-        categoryClipRepository.save(categoryClipEntity);
+        return categoryClipEntity;
     }
 }

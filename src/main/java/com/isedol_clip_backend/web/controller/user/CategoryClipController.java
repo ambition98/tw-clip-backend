@@ -50,6 +50,17 @@ public class CategoryClipController {
         return MakeResp.make(HttpStatus.OK, "Success");
     }
 
+    @PostMapping("/category/{categoryId}/clips")
+    public ResponseEntity<CommonResponse> deleteCategoryClips(
+            @PathVariable final long categoryId,
+            List<String> clipsId)
+            throws NoExistedDataException {
+
+        int cntDeletedClips = categoryClipService.deleteAll(getAccountId(), categoryId, clipsId);
+
+        return MakeResp.make(HttpStatus.OK, "Success", cntDeletedClips);
+    }
+
     private long getAccountId() {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
 

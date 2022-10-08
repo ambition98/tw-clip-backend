@@ -24,14 +24,14 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/user/favorite")
 @RequiredArgsConstructor
 public class FavoriteController {
 
     private final FavoriteService favoriteService;
     private final TwitchClipUtil twitchClipUtil;
 
-    @GetMapping("/favorites")
+    @GetMapping("/all")
     public ResponseEntity<CommonResponse> getFavorites() throws NoExistedDataException,
             ApiRequestException, IOException, ParseException {
 
@@ -41,7 +41,7 @@ public class FavoriteController {
         return MakeResp.make(HttpStatus.OK, "Success", clips);
     }
 
-    @PostMapping("/favorite")
+    @PostMapping("")
     public ResponseEntity<CommonResponse> postFavorite(@RequestBody final String body) throws NoExistedDataException,
             AlreadyExistedDataException {
         JSONObject jsonObject = new JSONObject(body);
@@ -51,13 +51,19 @@ public class FavoriteController {
         return MakeResp.make(HttpStatus.OK, "Success", favoriteDto);
     }
 
-    @DeleteMapping("/favorite/{clipId}")
+    @DeleteMapping("/{clipId}")
     public ResponseEntity<CommonResponse> deleteFavorite(@PathVariable final String clipId) throws NoExistedDataException {
         favoriteService.delete(getAccountId(), clipId);
         return MakeResp.make(HttpStatus.OK, "Success");
     }
 
-    @GetMapping("/favorite/exists")
+    @DeleteMapping("/all")
+    public ResponseEntity<CommonResponse> deleteAllFavorite(final List<String> clipsId) throws NoExistedDataException {
+        int cntDeletedFav = favoriteService.deleteAll(getAccountId(), clipsId);
+        return MakeResp.make(HttpStatus.OK, "Success", cntDeletedFav);
+    }
+
+    @GetMapping("/exists")
     public ResponseEntity<CommonResponse> isExistedFavorite(final String clipId)
             throws NoExistedDataException {
         Boolean exists = favoriteService.exists(getAccountId(), clipId);
@@ -68,30 +74,4 @@ public class FavoriteController {
         String id = SecurityContextHolder.getContext().getAuthentication().getName();
         return Long.parseLong(id);
     }
-
-//    private List<TwitchClip> getClipList(List<FavoriteEntity> entityList) throws ApiRequestException, IOException, ParseException {
-//        List<TwitchClip> clips = new ArrayList<>(entityList.size());
-//        List<String> temp = new ArrayList<>(100);
-//        for(FavoriteEntity entity : entityList) {
-//            temp.add(entity.getClipId());
-//            if(temp.size() == 100) {
-//                String[] idArr = temp.toArray(new String[0]);
-//                JSONObject jsonObject = callTwitchApi.requestClipsById(idArr);
-//                clips.addAll(twitchMapper.mappingClips(jsonObject));
-//                temp.clear();
-//            }
-//        }
-//
-//        if(entityList.size() % 100 != 0) {
-//            temp.clear();
-//            for(int i=entityList.size() / 100 * 100; i<entityList.size(); i++) {
-//                temp.add(entityList.get(i).getClipId());
-//            }
-//            String[] idArr = temp.toArray(new String[0]);
-//            JSONObject jsonObject = callTwitchApi.requestClipsById(idArr);
-//            clips.addAll(twitchMapper.mappingClips(jsonObject));
-//        }
-//
-//        return clips;
-//    }
 }

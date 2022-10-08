@@ -10,4 +10,5 @@ import java.util.List;
 public interface CategoryClipRepository extends JpaRepository<CategoryClipEntity, Long> {
     List<CategoryClipEntity> findByAccountAndCategory(AccountEntity account, CategoryEntity category);
 
+    int deleteAllByAccountAndCategoryAndClipIdIn(AccountEntity account, CategoryEntity category, List<String> clipsId);
 }

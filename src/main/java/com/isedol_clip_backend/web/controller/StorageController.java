@@ -28,17 +28,16 @@ public class StorageController {
     public ResponseEntity<CommonResponse> getHotclips(final String period, final int page) {
         TwitchClip[] clipsDto = null;
         switch (period) {
+            case "day":
+                clipsDto = twitchStorage.getHotclips(HotclipPeirod.DAY, page);
+                break;
             case "week":
                 clipsDto = twitchStorage.getHotclips(HotclipPeirod.WEEK, page);
                 break;
             case "month":
                 clipsDto = twitchStorage.getHotclips(HotclipPeirod.MONTH, page);
-                break;
-            case "quarter":
-                clipsDto = twitchStorage.getHotclips(HotclipPeirod.QUARTER, page);
         }
 
-//        log.info("dto: {}", Arrays.toString(clipsDto));
         return MakeResp.make(HttpStatus.OK, "Success", clipsDto);
     }
 

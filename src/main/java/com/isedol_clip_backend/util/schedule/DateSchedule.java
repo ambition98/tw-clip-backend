@@ -20,29 +20,29 @@ public class DateSchedule {
     public static String NOW;
     public static String WEEK_AGO;
     public static String MONTH_AGO;
-    public static String QUARTER_AGO;
+    public static String DAY_AGO;
 
     @Scheduled(cron = "0 0 * * * *")
     public void setDate() {
+        Calendar day = Calendar.getInstance();
         Calendar week = Calendar.getInstance();
         Calendar month = Calendar.getInstance();
-        Calendar quarter = Calendar.getInstance();
 
+        day.add(Calendar.DATE, -1);
         week.add(Calendar.DATE, -7);
         month.add(Calendar.MONTH, -1);
-        quarter.add(Calendar.MONTH, -3);
 
+        day.add(Calendar.HOUR, -9);
         week.add(Calendar.HOUR, -9);
         month.add(Calendar.HOUR, -9);
-        quarter.add(Calendar.HOUR, -9);
 
+        DAY_AGO = SDF.format(day.getTime());
         WEEK_AGO = SDF.format(week.getTime());
         MONTH_AGO = SDF.format(month.getTime());
-        QUARTER_AGO = SDF.format(quarter.getTime());
 
+        log.info("dayAgo: {}", DAY_AGO);
         log.info("weekAgo: {}", WEEK_AGO);
         log.info("monthAgo: {}", MONTH_AGO);
-        log.info("quarterAgo: {}", QUARTER_AGO);
     }
 
     @Scheduled(cron = "0 0 0 * * *")

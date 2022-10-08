@@ -1,9 +1,9 @@
 package com.isedol_clip_backend.util.myEnum;
 
 public enum HotclipPeirod {
-    WEEK(10),
-    MONTH(20),
-    QUARTER(30);
+    DAY(10),
+    WEEK(20),
+    MONTH(30);
 
     private final int storeCnt;
 

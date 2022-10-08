@@ -10,8 +10,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -19,9 +18,14 @@ public class TwitchMapper {
 
     private final ObjectMapper objectMapperSe;
 
+    private static final Set<String> BANNED_CLIPS = new HashSet<>(Arrays.asList(
+            "SpoopyRockyHamPraiseIt-_mbCCsQMqjYcaLre",
+            "SpicyPlausibleDiamondRalpherZ-M4mzvu_rtXFrR0cg"
+    ));
+
     public TwitchUser[] mappingUsers(JSONArray jsonArray) throws JsonProcessingException {
         TwitchUser[] users = new TwitchUser[jsonArray.length()];
-        for(int i=0; i<jsonArray.length(); i++) {
+        for (int i=0; i<jsonArray.length(); i++) {
             users[i] = objectMapperSe.readValue(jsonArray.getJSONObject(i).toString(), TwitchUser.class);
         }
 
@@ -36,8 +40,12 @@ public class TwitchMapper {
     public List<TwitchClip> mappingClips(JSONObject jsonObject) throws JsonProcessingException, ParseException {
         JSONArray jsonArray = jsonObject.getJSONArray("data");
         List<TwitchClip> clips = new ArrayList<>(jsonArray.length());
-        for(int i=0; i<jsonArray.length(); i++) {
+        for (int i=0; i<jsonArray.length(); i++) {
             TwitchClip temp = objectMapperSe.readValue(jsonArray.getJSONObject(i).toString(), TwitchClip.class);
+
+            if (BANNED_CLIPS.contains(temp.getId()))
+                continue;
+
             String createdAt = temp.getCreatedAt();
             temp.setCreatedAt(ConvertDateFormat.rfcToGeneral(createdAt));
             clips.add(temp);

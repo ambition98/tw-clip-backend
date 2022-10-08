@@ -33,23 +33,6 @@ public class FavoriteService {
         return entityList;
     }
 
-//    public List<String> getByAccountId(long id, Pageable pageable) throws NoExistedDataException {
-//        AccountEntity accountEntity = accountService.getById(id);
-//        List<FavoriteEntity> entityList
-//                = favoriteRepository.findByAccount(accountEntity, pageable);
-//        if(entityList.size() < 1)
-//            throw new NoExistedDataException();
-//
-//        for(FavoriteEntity entity : entityList) {
-//            System.out.println(entity.toString());
-//        }
-//
-//        List<String> list = new ArrayList<>();
-//        entityList.forEach((e) -> list.add(e.getClipId()));
-//
-//        return list;
-//    }
-
     public boolean exists(long accountId, String clipId) throws NoExistedDataException {
         AccountEntity accountEntity = accountService.getById(accountId);
         return favoriteRepository.existsByAccountAndClipId(accountEntity, clipId);
@@ -77,5 +60,11 @@ public class FavoriteService {
                 = favoriteRepository.findByAccountAndClipId(accountEntity, clipId)
                 .orElseThrow(NoExistedDataException::new);
         favoriteRepository.delete(favoriteEntity);
+    }
+
+    public int deleteAll(long accountId, List<String> clipsId) throws NoExistedDataException {
+        AccountEntity accountEntity = accountService.getById(accountId);
+        return favoriteRepository.deleteAllByAccountAndClipIdIn(accountEntity, clipsId);
+
     }
 }

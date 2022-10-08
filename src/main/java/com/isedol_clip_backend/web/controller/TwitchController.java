@@ -106,7 +106,6 @@ public class TwitchController {
         JSONObject jsonObject;
         String twitchRefreshToken;
         String twitchAccessToken;
-        long twitchId;
 
         jsonObject = callTwitchAPI.requestOauth(code);
 
@@ -136,11 +135,11 @@ public class TwitchController {
         return MakeResp.make(HttpStatus.OK, "Success", twitchUser);
     }
 
-    private String getCursor(JSONObject jsonObject) throws JSONException {
+    private String getCursor(JSONObject jsonObject) {
         try {
             return jsonObject.getJSONObject("pagination").getString("cursor");
         } catch (JSONException e) {
-            throw new JSONException("Cannot get cursor");
+            return null;
         }
     }
 }

@@ -40,9 +40,6 @@ public class CallTwitchApiSchedule {
     private static final long[] BROADCASTER_ID
             = new long[]{195641865, 707328484, 203667951, 169700336, 237570548 ,702754423};
     private static final int FIRST = 4;
-    public static final int WEEK_SIZE = 10;
-    public static final int MONTH_SIZE = 20;
-    public static final int QUARTER_SIZE = 30;
 
     @Async
     @CheckScheduled
@@ -62,9 +59,9 @@ public class CallTwitchApiSchedule {
     @Async
     @Scheduled(cron = "0 0 * * * *")
     public void setHotclips() throws InterruptedException, IOException, ParseException, NoExistedDataException, ApiRequestException {
+        requestHotclips(HotclipPeirod.DAY);
         requestHotclips(HotclipPeirod.WEEK);
         requestHotclips(HotclipPeirod.MONTH);
-        requestHotclips(HotclipPeirod.QUARTER);
     }
 
     @CheckScheduled
@@ -90,7 +87,6 @@ public class CallTwitchApiSchedule {
         String startedAt = getStartedAt(period);
 
         for(int i = 0; i<period.getStoreCnt(); i++) {
-            int idx = 0;
             ArrayList<TwitchClip> clips = new ArrayList<>();
 
             for(int j=0; j<BROADCASTER_ID.length; j++) {
@@ -140,12 +136,12 @@ public class CallTwitchApiSchedule {
 
     private String getStartedAt(HotclipPeirod period) {
         switch (period) {
+            case DAY:
+                return DateSchedule.DAY_AGO;
             case WEEK:
                 return DateSchedule.WEEK_AGO;
             case MONTH:
                 return DateSchedule.MONTH_AGO;
-            case QUARTER:
-                return DateSchedule.QUARTER_AGO;
         }
 
         return null;
