@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -16,14 +17,17 @@ import java.util.Calendar;
 @Getter
 public class DateSchedule {
     @Getter(AccessLevel.NONE)
-    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     public static String NOW;
     public static String WEEK_AGO;
     public static String MONTH_AGO;
     public static String DAY_AGO;
 
+    // UTC 기준
     @Scheduled(cron = "0 0 * * * *")
-    public void setDate() {
+    public void setDate() throws ParseException {
+        log.info("setDate()");
+
         Calendar day = Calendar.getInstance();
         Calendar week = Calendar.getInstance();
         Calendar month = Calendar.getInstance();
@@ -43,13 +47,5 @@ public class DateSchedule {
         log.info("dayAgo: {}", DAY_AGO);
         log.info("weekAgo: {}", WEEK_AGO);
         log.info("monthAgo: {}", MONTH_AGO);
-    }
-
-    @Scheduled(cron = "0 0 0 * * *")
-    public void setNow() {
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.DATE, 2);
-        NOW = SDF.format(c.getTime());
-        log.info("now: {}", NOW);
     }
 }

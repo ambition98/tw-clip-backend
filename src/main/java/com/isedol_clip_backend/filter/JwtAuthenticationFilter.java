@@ -23,7 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String jwt = CookieUtil.getCookie(request, "tk");
-        log.info("jwt: {}", jwt);
+//        log.info("jwt: {}", jwt);
 //        request.setAttribute("jwt", jwt);
 
         if(jwt != null && !jwt.isEmpty()) {
@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
-            log.info("인증 완료");
+//            log.info("인증 완료");
         }
 
         filterChain.doFilter(request, response);

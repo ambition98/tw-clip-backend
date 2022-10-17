@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.text.ParseException;
 
 @Slf4j
 @Component
@@ -20,11 +21,10 @@ public class PostConstructor {
     private final CallTwitchApiSchedule callTwitchApiSchedule;
     private final LoadSecret loadSecret;
     @PostConstruct
-    public void init() {
+    public void init() throws ParseException {
         loadSecret.load();
         jwtTokenProvider.setKey(loadSecret.getJwtSecret());
         dateSchedule.setDate();
-        dateSchedule.setNow();
 
         try {
             callTwitchApiSchedule.assignTwitchAccessToken();

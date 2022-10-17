@@ -213,13 +213,13 @@ public class CallTwitchAPI {
         if(dto.getStartedAt() != null) {
             String startedAt =
                     ConvertDateFormat.generalToRfc(dto.getStartedAt(),
-                            ConvertDateFormat.convertType.START_AT);
+                            ConvertDateFormat.type.START_AT);
             sb.append("started_at=").append(startedAt).append("&");
         }
 
         if(dto.getEndedAt() != null) {
             String endedAt = ConvertDateFormat.generalToRfc(dto.getEndedAt(),
-                    ConvertDateFormat.convertType.ENDED_AT);
+                    ConvertDateFormat.type.ENDED_AT);
             sb.append("ended_at=").append(endedAt).append("&");
         }
 

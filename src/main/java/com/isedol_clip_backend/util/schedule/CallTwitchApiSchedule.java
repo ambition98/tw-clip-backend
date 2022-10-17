@@ -1,5 +1,6 @@
 package com.isedol_clip_backend.util.schedule;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.isedol_clip_backend.exception.ApiRequestException;
 import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.*;
@@ -40,6 +41,7 @@ public class CallTwitchApiSchedule {
     private static final long[] BROADCASTER_ID
             = new long[]{195641865, 707328484, 203667951, 169700336, 237570548 ,702754423};
     private static final int FIRST = 4;
+    private static final int PAGE_SIZE = 24;
 
     @Async
     @CheckScheduled
@@ -57,11 +59,12 @@ public class CallTwitchApiSchedule {
 
     @CheckScheduled
     @Async
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "10 0 * * * *")
     public void setHotclips() throws InterruptedException, IOException, ParseException, NoExistedDataException, ApiRequestException {
-        requestHotclips(HotclipPeirod.DAY);
-        requestHotclips(HotclipPeirod.WEEK);
-        requestHotclips(HotclipPeirod.MONTH);
+//        requestBalancedHotclips(HotclipPeirod.DAY);
+        requestHotClips(HotclipPeirod.DAY);
+        requestBalancedHotclips(HotclipPeirod.WEEK);
+        requestBalancedHotclips(HotclipPeirod.MONTH);
     }
 
     @CheckScheduled
@@ -81,7 +84,7 @@ public class CallTwitchApiSchedule {
     }
 
 
-    private void requestHotclips(HotclipPeirod period) throws InterruptedException, IOException, ParseException, ApiRequestException {
+    private void requestBalancedHotclips(HotclipPeirod period) throws InterruptedException, IOException, ParseException, ApiRequestException {
         ArrayList<TwitchClip[]> list = new ArrayList<>(period.getStoreCnt());
         String[] cursor = new String[6];
         String startedAt = getStartedAt(period);
@@ -113,6 +116,57 @@ public class CallTwitchApiSchedule {
             list.add(clips.toArray(new TwitchClip[0]));
             if(!hasNextData(cursor))
                 break;
+        }
+
+        twitchStorage.setHotclips(period, list);
+    }
+
+    private void requestHotClips(HotclipPeirod period) throws ParseException, JsonProcessingException, InterruptedException {
+        ArrayList<TwitchClip[]> list = new ArrayList<>(period.getStoreCnt());
+        String[] cursor = new String[6];
+        String startedAt = getStartedAt(period);
+        int capacity = period.getStoreCnt() * PAGE_SIZE;
+        ArrayList<TwitchClip> clips = new ArrayList<>(capacity);
+
+        while (clips.size() < capacity) {
+            int remainsCnt = capacity - clips.size();
+            int first = remainsCnt > 600 ? 100 : (remainsCnt / 6) + (remainsCnt % 6);
+            log.info("remainsCnt: {}", remainsCnt);
+            log.info("first: {}", first);
+
+            for(int i=0; i<BROADCASTER_ID.length; i++) {
+                JSONObject jsonObject;
+                ReqClipsDto reqClipsDto = new ReqClipsDto(BROADCASTER_ID[i], cursor[i],
+                        first, startedAt, DateSchedule.NOW);
+
+                try {
+                    jsonObject = callTwitchAPI.requestClips(reqClipsDto);
+                } catch (NoExistedDataException e) {
+                    continue;
+                } catch (Exception e) {
+                    log.warn("Throwed NoExistedDataException during request hotclips");
+                    log.warn("Faild dto: {}", reqClipsDto);
+                    continue;
+                }
+
+                cursor[i] = getCursor(jsonObject);
+                List<TwitchClip> tempClips = twitchMapper.mappingClips(jsonObject);
+
+                clips.addAll(tempClips);
+                Thread.sleep(100);
+            }
+        }
+
+        clips.sort(getComparator());
+        int idx = 0;
+        TwitchClip[] temp = new TwitchClip[24];
+        for (TwitchClip clip : clips) {
+            temp[idx++] = clip;
+            if (idx >= temp.length) {
+                list.add(temp);
+                idx = 0;
+                temp = new TwitchClip[24];
+            }
         }
 
         twitchStorage.setHotclips(period, list);

@@ -12,6 +12,7 @@ import com.isedol_clip_backend.web.model.response.CommonResponse;
 import com.isedol_clip_backend.web.service.FavoriteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -41,13 +43,17 @@ public class FavoriteController {
         return MakeResp.make(HttpStatus.OK, "Success", clips);
     }
 
-    @PostMapping("")
-    public ResponseEntity<CommonResponse> postFavorite(@RequestBody final String body) throws NoExistedDataException,
-            AlreadyExistedDataException {
-        JSONObject jsonObject = new JSONObject(body);
-        String clipId = jsonObject.getString("clipId");
-        Favorite favoriteDto = favoriteService.save(getAccountId(), clipId);
+    @GetMapping("/exists")
+    public ResponseEntity<CommonResponse> isExistedFavorite(final String clipId)
+            throws NoExistedDataException {
+        Boolean exists = favoriteService.exists(getAccountId(), clipId);
+        return MakeResp.make(HttpStatus.OK, "Success", exists);
+    }
 
+    @PostMapping("/{clipId}")
+    public ResponseEntity<CommonResponse> postFavorite(@PathVariable final String clipId) throws NoExistedDataException,
+            AlreadyExistedDataException {
+        Favorite favoriteDto = favoriteService.save(getAccountId(), clipId);
         return MakeResp.make(HttpStatus.OK, "Success", favoriteDto);
     }
 
@@ -57,17 +63,17 @@ public class FavoriteController {
         return MakeResp.make(HttpStatus.OK, "Success");
     }
 
-    @DeleteMapping("/all")
-    public ResponseEntity<CommonResponse> deleteAllFavorite(final List<String> clipsId) throws NoExistedDataException {
-        int cntDeletedFav = favoriteService.deleteAll(getAccountId(), clipsId);
-        return MakeResp.make(HttpStatus.OK, "Success", cntDeletedFav);
-    }
+    @DeleteMapping("")
+    public ResponseEntity<CommonResponse> deleteFavorites(@RequestBody final String body) throws NoExistedDataException {
+        JSONArray jsonArray = new JSONObject(body).getJSONArray("clipsId");
+        List<String> clipsId = new ArrayList<>(jsonArray.length());
+        for (int i=0; i<jsonArray.length(); i++) {
+            clipsId.add(jsonArray.getString(i));
+        }
 
-    @GetMapping("/exists")
-    public ResponseEntity<CommonResponse> isExistedFavorite(final String clipId)
-            throws NoExistedDataException {
-        Boolean exists = favoriteService.exists(getAccountId(), clipId);
-        return MakeResp.make(HttpStatus.OK, "Success", exists);
+        int cntDeleted = favoriteService.deleteList(getAccountId(), clipsId);
+
+        return MakeResp.make(HttpStatus.OK, "Success", cntDeleted);
     }
 
     private long getAccountId() {

@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -62,9 +63,10 @@ public class FavoriteService {
         favoriteRepository.delete(favoriteEntity);
     }
 
-    public int deleteAll(long accountId, List<String> clipsId) throws NoExistedDataException {
+    @Transactional
+    public int deleteList(long accountId, List<String> clipsId) throws NoExistedDataException {
         AccountEntity accountEntity = accountService.getById(accountId);
+        System.out.println(accountEntity.toString());
         return favoriteRepository.deleteAllByAccountAndClipIdIn(accountEntity, clipsId);
-
     }
 }

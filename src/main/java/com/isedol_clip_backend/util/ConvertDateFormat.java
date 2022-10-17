@@ -41,10 +41,10 @@ public class ConvertDateFormat {
     // For request TwitchAPI
     // yyyy-MM-dd -> yyyy-MM-dd'T'HH:mm:ss'Z'
     // KST -> UTC
-    public static String generalToRfc(String time, convertType type) throws ParseException {
+    public static String generalToRfc(String time, type type) throws ParseException {
         Date d = generalFormat.get().parse(time);
 
-        if(type == convertType.ENDED_AT) {
+        if(type == ConvertDateFormat.type.ENDED_AT) {
             d.setTime(d.getTime() + ONE_DAY);
         }
 
@@ -63,7 +63,7 @@ public class ConvertDateFormat {
         return generalFormat.get().format(d);
     }
 
-    public enum convertType {
+    public enum type {
         START_AT,
         ENDED_AT
     }
