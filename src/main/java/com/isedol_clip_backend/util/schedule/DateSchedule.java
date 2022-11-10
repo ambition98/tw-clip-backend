@@ -26,8 +26,6 @@ public class DateSchedule {
     // UTC 기준
     @Scheduled(cron = "0 0 * * * *")
     public void setDate() throws ParseException {
-        log.info("setDate()");
-
         Calendar day = Calendar.getInstance();
         Calendar week = Calendar.getInstance();
         Calendar month = Calendar.getInstance();

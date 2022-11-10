@@ -5,6 +5,7 @@ import com.isedol_clip_backend.exception.NoExistedDataException;
 import com.isedol_clip_backend.util.LoadSecret;
 import com.isedol_clip_backend.util.schedule.CallTwitchApiSchedule;
 import com.isedol_clip_backend.util.schedule.DateSchedule;
+import com.isedol_clip_backend.web.controller.TwitchEventListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,8 @@ public class PostConstructor {
     private final DateSchedule dateSchedule;
     private final CallTwitchApiSchedule callTwitchApiSchedule;
     private final LoadSecret loadSecret;
+
+    private final TwitchEventListener twitchEventListener;
     @PostConstruct
     public void init() throws ParseException {
         loadSecret.load();
@@ -30,6 +33,7 @@ public class PostConstructor {
             callTwitchApiSchedule.assignTwitchAccessToken();
             callTwitchApiSchedule.setIsedolInfo();
             callTwitchApiSchedule.setHotclips();
+//            twitchEventListener.trysub();
         } catch (NoExistedDataException e) {
             // Do Nothing
         } catch (Exception e) {

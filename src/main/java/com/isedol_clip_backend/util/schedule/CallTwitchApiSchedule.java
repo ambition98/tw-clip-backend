@@ -60,7 +60,8 @@ public class CallTwitchApiSchedule {
     @CheckScheduled
     @Async
     @Scheduled(cron = "10 0 * * * *")
-    public void setHotclips() throws InterruptedException, IOException, ParseException, NoExistedDataException, ApiRequestException {
+    public void setHotclips()
+            throws InterruptedException, IOException, ParseException, NoExistedDataException, ApiRequestException {
 //        requestBalancedHotclips(HotclipPeirod.DAY);
         requestHotClips(HotclipPeirod.DAY);
         requestBalancedHotclips(HotclipPeirod.WEEK);
@@ -69,7 +70,7 @@ public class CallTwitchApiSchedule {
 
     @CheckScheduled
     @Scheduled(cron = "0 0 0 * * 1")
-    public void assignTwitchAccessToken() throws ApiRequestException, IOException {
+    public void assignTwitchAccessToken() throws ApiRequestException, IOException, InterruptedException {
         JSONObject jsonObject = callTwitchAPI.requestAccessToken();
         String newAccessToken = jsonObject.getString("access_token");
         JSONObject result = new JSONObject();
